@@ -16,9 +16,14 @@ assert(config.includes('applicationMode: "demo"'), "O painel deve permanecer no 
 assert(config.includes("https://calebemedeiros.github.io/catalogo-demo-rede-plan-assiste/api/v1/manifest.json"), "Manifesto externo não configurado.");
 assert(html.includes("connect-src 'self' https://calebemedeiros.github.io"), "CSP não permite a fonte externa aprovada.");
 assert(html.includes('id="fonte"'), "Filtro de origem não encontrado.");
+assert(html.includes('id="estado"') && html.includes('id="municipio"'), "Filtros nacionais não encontrados.");
+assert(html.includes('id="vinculo"'), "Filtro de forma de acesso não encontrado.");
+assert(html.includes("Abrangência nacional"), "Posicionamento nacional não encontrado.");
 assert(app.includes("checksum_sha256"), "Verificação de integridade ausente.");
 assert(app.includes("authorization"), "Bloqueio de autorização ausente.");
 assert(app.includes("source_id"), "Integração multifonte ausente.");
+assert(app.includes('schema_version !== "3.0.0"'), "Contrato v3 não configurado.");
+assert(app.includes("network_links"), "Vínculos de rede não configurados.");
 
 for (const file of ["data/manifest.json", "data/catalogo-demo-v1.json"]) {
   try {
@@ -29,4 +34,4 @@ for (const file of ["data/manifest.json", "data/catalogo-demo-v1.json"]) {
   }
 }
 
-console.log("Aplicação válida: catálogo externo configurado, multifonte habilitada e nenhuma base incorporada ao painel.");
+console.log("Aplicação válida: consulta nacional, catálogo externo v3, seis fontes compatíveis e nenhuma base incorporada.");

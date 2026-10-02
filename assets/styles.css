@@ -329,10 +329,14 @@ svg {
 
 .search-form {
   display: grid;
-  grid-template-columns: minmax(240px, 1.45fr) repeat(4, minmax(132px, 0.68fr)) auto;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: end;
   gap: 13px;
   margin-top: 24px;
+}
+
+.field--search {
+  grid-column: span 2;
 }
 
 .field {
@@ -685,6 +689,18 @@ svg {
   height: 8px;
   background: var(--mint-500);
   border-radius: 50%;
+}
+
+.access-status {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 4px 8px;
+  color: var(--warning);
+  background: var(--warning-bg);
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 750;
 }
 
 .details-button {

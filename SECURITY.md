@@ -1,6 +1,6 @@
 # Segurança do painel
 
-## Escopo da fase D1.2
+## Escopo da fase D1.3
 
 Este repositório aceita somente dados sintéticos. Não envie extrações da AMHP, dados de prestadores reais, credenciais, dados de beneficiários ou informações assistenciais.
 

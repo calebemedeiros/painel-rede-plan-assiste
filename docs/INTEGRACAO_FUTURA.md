@@ -11,7 +11,7 @@ window.APP_CONFIG = Object.freeze({
 });
 ```
 
-O navegador não conhece a API da AMHP e não recebe credenciais. Ele consulta uma API estática externa, verifica o manifesto e o SHA-256 e então abre o catálogo consolidado. A demonstração reúne uma fonte AMHPDF sintética e uma fonte direta sintética do Plan-Assiste.
+O navegador não recebe credenciais. Ele consulta uma API estática externa, verifica o manifesto e o SHA-256 e então abre o catálogo consolidado. A demonstração reúne seis fontes sintéticas de abrangência nacional e regional e separa origem, vínculo, abrangência e modalidade de acesso.
 
 ## Mudança prevista na fase D2
 
@@ -20,7 +20,7 @@ Após autorização, a configuração poderá apontar para um armazenamento exte
 ```js
 window.APP_CONFIG = Object.freeze({
   applicationMode: "production",
-  manifestUrl: "https://dados.exemplo.br/amhp-plan-assiste/producao/manifest.json"
+  manifestUrl: "https://dados.exemplo.br/rede-plan-assiste/producao/manifest.json"
 });
 ```
 
@@ -66,4 +66,4 @@ O código recusa uma base de produção quando:
 - ambiente, contagem ou autorização divergem;
 - o SHA-256 não corresponde ao arquivo recebido.
 
-Na fase D2, deverão ser acrescentados limites de variação entre versões, processo institucional de rollback e revisão dos cabeçalhos de segurança. Os contratos JSON Schema da versão 2 já acompanham o catálogo demonstrativo.
+Na fase D2, deverão ser acrescentados limites de variação entre versões, processo institucional de rollback e revisão dos cabeçalhos de segurança. Os contratos JSON Schema da versão 3 já acompanham o catálogo demonstrativo.

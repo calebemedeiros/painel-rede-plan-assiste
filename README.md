@@ -1,10 +1,10 @@
 # Painel da rede Plan-Assiste — demonstração
 
-Protótipo acadêmico para validar uma consulta simplificada a profissionais e estabelecimentos relacionados à rede AMHPDF utilizada pelo Plan-Assiste MPU.
+Protótipo acadêmico para validar uma consulta nacional e multifonte a profissionais e estabelecimentos relacionados à rede de atendimento do Plan-Assiste MPU.
 
 ## Situação
 
-**Fase D1.2 — painel concluído para demonstração de integração.**
+**Fase D1.3 — consulta nacional multifonte concluída para demonstração.**
 
 - não é uma fonte oficial;
 - não contém dados de prestadores reais;
@@ -15,12 +15,14 @@ Protótipo acadêmico para validar uma consulta simplificada a profissionais e e
 ## Funcionalidades
 
 - pesquisa por nome, especialidade, estabelecimento e localidade;
-- filtros por especialidade, região, tipo e origem da rede;
+- filtros por especialidade, estado, município, tipo, origem e forma de acesso;
 - ordenação e paginação;
 - detalhes de locais e registros profissionais demonstrativos;
 - URLs compartilháveis com os filtros da consulta;
 - layout responsivo e navegação por teclado;
-- catálogo externo com 360 médicos, profissionais e estabelecimentos sintéticos;
+- catálogo externo com 600 profissionais e estabelecimentos sintéticos em seis fontes;
+- diferenciação entre credenciamento direto, rede parceira, rede conveniada, intercâmbio regional e rede hospitalar;
+- aviso explícito de que a presença no catálogo não garante elegibilidade, autorização ou disponibilidade;
 - integridade do catálogo verificada por SHA-256;
 - bloqueio de bases incompatíveis com o ambiente.
 

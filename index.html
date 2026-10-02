@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Protótipo demonstrativo de consulta à rede de atendimento vinculada ao Plan-Assiste MPU.">
+    <meta name="description" content="Consulta nacional demonstrativa e multifonte da rede de atendimento vinculada ao Plan-Assiste MPU.">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://calebemedeiros.github.io; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests">
     <title>Rede de atendimento | Plan-Assiste MPU</title>
@@ -28,8 +28,8 @@
           <img src="assets/logo-planassiste.png" alt="Plan-Assiste">
         </a>
         <div class="brand-row__context">
-          <span class="eyebrow">Rede credenciada</span>
-          <strong>Consulta de prestadores</strong>
+          <span class="eyebrow">Rede de atendimento</span>
+          <strong>Consulta nacional de prestadores</strong>
         </div>
         <a class="official-link" href="https://planassiste.mpu.mp.br/beneficiarios/conheca-o-plano/rede-credenciada" target="_blank" rel="noopener noreferrer">
           Rede oficial
@@ -46,9 +46,9 @@
               <span class="status-badge__dot" aria-hidden="true"></span>
               Sistema pronto para integração
             </div>
-            <p class="eyebrow">Plan-Assiste MPU • Rede AMHPDF</p>
-            <h1>Encontre atendimento por especialidade ou região</h1>
-            <p class="hero__lead">Consulta integrada de profissionais e estabelecimentos, preparada para reunir a rede AMHPDF e bases próprias do Plan-Assiste em uma única experiência.</p>
+            <p class="eyebrow">Plan-Assiste MPU • Abrangência nacional</p>
+            <h1>Encontre atendimento em todo o Brasil</h1>
+            <p class="hero__lead">Consulta integrada de profissionais, unidades e redes de atendimento, preparada para reunir credenciamentos diretos, redes conveniadas e fontes regionais em uma única experiência.</p>
           </div>
 
           <aside class="data-status" aria-label="Situação da base">
@@ -87,9 +87,16 @@
               </div>
 
               <div class="field">
-                <label for="regiao">Região</label>
-                <select id="regiao" name="regiao">
-                  <option value="">Todas as regiões</option>
+                <label for="estado">Estado</label>
+                <select id="estado" name="estado">
+                  <option value="">Todos os estados</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="municipio">Município</label>
+                <select id="municipio" name="municipio">
+                  <option value="">Todos os municípios</option>
                 </select>
               </div>
 
@@ -106,6 +113,13 @@
                 <label for="fonte">Origem da rede</label>
                 <select id="fonte" name="fonte">
                   <option value="">Todas as fontes</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="vinculo">Forma de acesso</label>
+                <select id="vinculo" name="vinculo">
+                  <option value="">Todas as modalidades</option>
                 </select>
               </div>
 
@@ -141,17 +155,17 @@
                 <dd id="total-estabelecimentos">—</dd>
               </div>
               <div>
-                <dt>Especialidades</dt>
-                <dd id="total-especialidades">—</dd>
+                <dt>Estados</dt>
+                <dd id="total-estados">—</dd>
               </div>
               <div>
-                <dt>Regiões</dt>
-                <dd id="total-regioes">—</dd>
+                <dt>Fontes</dt>
+                <dd id="total-fontes">—</dd>
               </div>
             </dl>
             <div class="summary-card__note">
               <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Zm0-14v4m0 4h.01"/></svg>
-              <p>Arquitetura pronta para receber novas bases autorizadas sem alterar a experiência de consulta.</p>
+              <p>Catálogo multifonte preparado para novas bases autorizadas e diferentes formas de vínculo.</p>
             </div>
           </aside>
 
@@ -167,7 +181,7 @@
                 <select id="ordenacao">
                   <option value="name">Nome</option>
                   <option value="specialty">Especialidade</option>
-                  <option value="region">Região</option>
+                  <option value="location">Localidade</option>
                 </select>
               </div>
             </div>
@@ -195,12 +209,12 @@
         <div class="page-width guidance__content">
           <div>
             <p class="eyebrow">Antes de agendar</p>
-            <h2>Confirme o atendimento com o prestador</h2>
+            <h2>Confirme elegibilidade e atendimento</h2>
           </div>
           <ul>
-            <li>Confirme se o profissional continua atendendo pelo convênio.</li>
-            <li>Verifique agenda, unidade e modalidade de atendimento.</li>
-            <li>Consulte os canais oficiais em caso de divergência cadastral.</li>
+            <li>A presença no catálogo não garante cobertura ou autorização.</li>
+            <li>Verifique a rede de origem, a unidade e a modalidade de acesso.</li>
+            <li>Confirme elegibilidade e disponibilidade pelos canais oficiais.</li>
           </ul>
         </div>
       </section>

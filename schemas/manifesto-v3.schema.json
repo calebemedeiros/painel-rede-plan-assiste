@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Manifesto do catálogo nacional demonstrativo",
+  "type": "object",
+  "required": ["schema_version", "environment", "generated_at", "catalog_url", "record_count", "source_count", "checksum_sha256", "authorization"],
+  "properties": {
+    "schema_version": { "const": "3.0.0" },
+    "environment": { "enum": ["demo", "production"] },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "catalog_url": { "type": "string" },
+    "record_count": { "type": "integer", "minimum": 0 },
+    "source_count": { "type": "integer", "minimum": 1 },
+    "checksum_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "authorization": { "type": "object" }
+  }
+}
