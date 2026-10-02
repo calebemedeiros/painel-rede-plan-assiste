@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://projeto.exemplo.br/schemas/manifesto-catalogo-plan-assiste-v1.schema.json",
+  "title": "Manifesto de publicação do catálogo — Plan-Assiste MPU",
+  "description": "Contrato do ponteiro para uma versão íntegra e previamente validada do catálogo.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "environment",
+    "generated_at",
+    "catalog_url",
+    "record_count",
+    "checksum_sha256",
+    "authorization"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "environment": {
+      "type": "string",
+      "enum": ["demo", "production"]
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "catalog_url": {
+      "type": "string",
+      "format": "uri-reference"
+    },
+    "record_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "checksum_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "authorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reference"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["synthetic-demo", "authorized"]
+        },
+        "reference": {
+          "type": ["string", "null"],
+          "maxLength": 160
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "environment": {
+            "const": "production"
+          }
+        },
+        "required": ["environment"]
+      },
+      "then": {
+        "properties": {
+          "authorization": {
+            "properties": {
+              "status": {
+                "const": "authorized"
+              },
+              "reference": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "catalog_url": {
+            "pattern": "^https://"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "environment": {
+            "const": "demo"
+          }
+        },
+        "required": ["environment"]
+      },
+      "then": {
+        "properties": {
+          "authorization": {
+            "properties": {
+              "status": {
+                "const": "synthetic-demo"
+              },
+              "reference": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

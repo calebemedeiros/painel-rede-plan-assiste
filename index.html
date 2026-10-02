@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Protótipo demonstrativo de consulta à rede de atendimento vinculada ao Plan-Assiste MPU.">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests">
+    <title>Rede de atendimento | Plan-Assiste MPU</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="assets/styles.css">
+    <script defer src="assets/config.js"></script>
+    <script defer src="assets/app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+
+    <header class="site-header">
+      <div class="government-bar">
+        <div class="page-width government-bar__content">
+          <span>Ministério Público da União</span>
+          <span class="government-bar__support">Central de atendimento: 0800 591 5601</span>
+        </div>
+      </div>
+
+      <div class="page-width brand-row">
+        <a class="brand" href="./" aria-label="Página inicial da consulta Plan-Assiste">
+          <img src="assets/logo-planassiste.png" alt="Plan-Assiste">
+        </a>
+        <div class="brand-row__context">
+          <span class="eyebrow">Rede credenciada</span>
+          <strong>Consulta de prestadores</strong>
+        </div>
+        <a class="official-link" href="https://planassiste.mpu.mp.br/beneficiarios/conheca-o-plano/rede-credenciada" target="_blank" rel="noopener noreferrer">
+          Rede oficial
+          <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </header>
+
+    <main id="conteudo">
+      <section class="hero">
+        <div class="page-width hero__content">
+          <div class="hero__copy">
+            <div class="status-badge">
+              <span class="status-badge__dot" aria-hidden="true"></span>
+              Ambiente demonstrativo
+            </div>
+            <p class="eyebrow">Plan-Assiste MPU • Rede AMHPDF</p>
+            <h1>Encontre atendimento por especialidade ou região</h1>
+            <p class="hero__lead">Uma consulta direta para localizar profissionais e estabelecimentos. Nesta versão, todos os registros são sintéticos e servem apenas para validar a proposta.</p>
+          </div>
+
+          <aside class="data-status" aria-label="Situação da base">
+            <span class="data-status__label">Base carregada</span>
+            <strong id="status-base">Verificando...</strong>
+            <span id="status-atualizacao">Aguarde</span>
+          </aside>
+        </div>
+      </section>
+
+      <section class="search-zone" aria-labelledby="titulo-busca">
+        <div class="page-width">
+          <div class="search-panel">
+            <div class="search-panel__heading">
+              <div>
+                <p class="eyebrow">Pesquisa</p>
+                <h2 id="titulo-busca">O que você procura?</h2>
+              </div>
+              <button class="text-button" id="limpar-busca" type="button">Limpar filtros</button>
+            </div>
+
+            <form id="form-busca" class="search-form" role="search">
+              <div class="field field--search">
+                <label for="consulta">Nome, especialidade ou estabelecimento</label>
+                <div class="input-with-icon">
+                  <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m21 21-4.35-4.35m2.35-5.65a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"/></svg>
+                  <input id="consulta" name="q" type="search" autocomplete="off" placeholder="Ex.: cardiologia ou clínica">
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="especialidade">Especialidade</label>
+                <select id="especialidade" name="especialidade">
+                  <option value="">Todas as especialidades</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="regiao">Região</label>
+                <select id="regiao" name="regiao">
+                  <option value="">Todas as regiões</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="tipo">Tipo de prestador</label>
+                <select id="tipo" name="tipo">
+                  <option value="">Profissionais e estabelecimentos</option>
+                  <option value="professional">Profissionais</option>
+                  <option value="facility">Estabelecimentos</option>
+                </select>
+              </div>
+
+              <button class="primary-button" type="submit">
+                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m21 21-4.35-4.35m2.35-5.65a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"/></svg>
+                Pesquisar
+              </button>
+            </form>
+
+            <div class="quick-search" aria-label="Atalhos por especialidade">
+              <span>Buscas frequentes</span>
+              <div id="atalhos-especialidades" class="chip-list"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="results-zone" aria-labelledby="titulo-resultados">
+        <div class="page-width results-layout">
+          <aside class="summary-card">
+            <p class="eyebrow">Visão da base</p>
+            <div class="summary-card__metric">
+              <strong id="total-registros">—</strong>
+              <span>registros demonstrativos</span>
+            </div>
+            <dl class="summary-list">
+              <div>
+                <dt>Profissionais</dt>
+                <dd id="total-profissionais">—</dd>
+              </div>
+              <div>
+                <dt>Estabelecimentos</dt>
+                <dd id="total-estabelecimentos">—</dd>
+              </div>
+              <div>
+                <dt>Especialidades</dt>
+                <dd id="total-especialidades">—</dd>
+              </div>
+              <div>
+                <dt>Regiões</dt>
+                <dd id="total-regioes">—</dd>
+              </div>
+            </dl>
+            <div class="summary-card__note">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Zm0-14v4m0 4h.01"/></svg>
+              <p>A versão final deverá usar somente dados autorizados e manter visível a data de atualização.</p>
+            </div>
+          </aside>
+
+          <div class="results-content">
+            <div class="results-header">
+              <div>
+                <p class="eyebrow">Resultados</p>
+                <h2 id="titulo-resultados" tabindex="-1">Prestadores encontrados</h2>
+                <p id="resumo-resultados" aria-live="polite">Carregando registros...</p>
+              </div>
+              <div class="field field--compact">
+                <label for="ordenacao">Ordenar por</label>
+                <select id="ordenacao">
+                  <option value="name">Nome</option>
+                  <option value="specialty">Especialidade</option>
+                  <option value="region">Região</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="aviso-erro" class="alert alert--error" role="alert" hidden>
+              <strong>Não foi possível carregar a base.</strong>
+              <span id="mensagem-erro">Tente novamente em alguns instantes.</span>
+            </div>
+
+            <div id="lista-resultados" class="results-list" aria-live="polite" aria-busy="true"></div>
+
+            <div id="sem-resultados" class="empty-state" hidden>
+              <div class="empty-state__icon" aria-hidden="true">⌕</div>
+              <h3>Nenhum resultado encontrado</h3>
+              <p>Revise os termos ou remova algum filtro para ampliar a consulta.</p>
+              <button class="secondary-button" id="limpar-vazio" type="button">Mostrar todos</button>
+            </div>
+
+            <nav id="paginacao" class="pagination" aria-label="Paginação dos resultados"></nav>
+          </div>
+        </div>
+      </section>
+
+      <section class="guidance">
+        <div class="page-width guidance__content">
+          <div>
+            <p class="eyebrow">Antes de agendar</p>
+            <h2>Confirme o atendimento com o prestador</h2>
+          </div>
+          <ul>
+            <li>Confirme se o profissional continua atendendo pelo convênio.</li>
+            <li>Verifique agenda, unidade e modalidade de atendimento.</li>
+            <li>Consulte os canais oficiais em caso de divergência cadastral.</li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="page-width site-footer__content">
+        <div>
+          <img src="assets/logo-planassiste-negativa.png" alt="Plan-Assiste MPU">
+          <p>Programa de Saúde e Assistência Social do Ministério Público da União</p>
+        </div>
+        <div class="site-footer__links">
+          <a href="https://planassiste.mpu.mp.br/" target="_blank" rel="noopener noreferrer">Portal Plan-Assiste</a>
+          <a href="https://www.encontreseumedico.com.br/" target="_blank" rel="noopener noreferrer">Encontre Seu Médico</a>
+          <span>Protótipo acadêmico • Dados sintéticos</span>
+        </div>
+      </div>
+    </footer>
+
+    <dialog id="detalhes-modal" class="details-modal" aria-labelledby="detalhes-titulo">
+      <div class="details-modal__header">
+        <div>
+          <span id="detalhes-tipo" class="provider-type"></span>
+          <h2 id="detalhes-titulo">Detalhes do prestador</h2>
+        </div>
+        <button id="fechar-modal" class="icon-button" type="button" aria-label="Fechar detalhes">×</button>
+      </div>
+      <div id="detalhes-conteudo" class="details-modal__body"></div>
+    </dialog>
+  </body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0.0",
+  "environment": "demo",
+  "generated_at": "2026-10-02T18:00:00Z",
+  "catalog_url": "./catalogo-demo-v1.json",
+  "record_count": 24,
+  "checksum_sha256": "d0c58dc9eae7aea727434ea0c071e3df5b927c9780a405a6432ab180d8fb279d",
+  "authorization": {
+    "status": "synthetic-demo",
+    "reference": null
+  }
+}
