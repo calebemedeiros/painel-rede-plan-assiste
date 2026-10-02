@@ -1,6 +1,6 @@
-# Segurança do protótipo
+# Segurança do painel
 
-## Escopo da fase D1
+## Escopo da fase D1.2
 
 Este repositório aceita somente dados sintéticos. Não envie extrações da AMHP, dados de prestadores reais, credenciais, dados de beneficiários ou informações assistenciais.
 
@@ -10,8 +10,9 @@ Este repositório aceita somente dados sintéticos. Não envie extrações da AM
 - nenhuma dependência JavaScript em tempo de execução;
 - checksum SHA-256 do catálogo;
 - verificação de ambiente e estado da autorização;
-- lista de campos proibidos no teste automatizado;
-- teste que exige identificação sintética em todos os registros;
+- catálogo armazenado em repositório separado;
+- lista de campos proibidos e identificação sintética validadas no repositório da API;
+- teste que impede reincorporar a base ao repositório da interface;
 - dados renderizados com `textContent`, sem interpretar HTML da fonte;
 - parâmetros de busca gravados na URL sem executar conteúdo;
 - credenciais e pastas de dados reais ignoradas pelo Git.

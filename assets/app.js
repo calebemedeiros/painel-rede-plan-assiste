@@ -11,6 +11,7 @@
     specialty: "",
     region: "",
     type: "",
+    source: "",
     sort: "name"
   };
 
@@ -20,6 +21,7 @@
     specialty: document.querySelector("#especialidade"),
     region: document.querySelector("#regiao"),
     type: document.querySelector("#tipo"),
+    source: document.querySelector("#fonte"),
     sort: document.querySelector("#ordenacao"),
     clear: document.querySelector("#limpar-busca"),
     clearEmpty: document.querySelector("#limpar-vazio"),
@@ -87,11 +89,11 @@
   }
 
   function validateManifest(manifest) {
-    const required = ["schema_version", "environment", "generated_at", "catalog_url", "record_count", "checksum_sha256", "authorization"];
+    const required = ["schema_version", "environment", "generated_at", "catalog_url", "record_count", "source_count", "checksum_sha256", "authorization"];
     if (!manifest || required.some((key) => !(key in manifest))) {
       throw new Error("Manifesto de dados incompleto.");
     }
-    if (manifest.schema_version !== "1.0.0") {
+    if (manifest.schema_version !== "2.0.0") {
       throw new Error("Versão do manifesto não suportada.");
     }
     if (manifest.environment !== config.applicationMode) {
@@ -114,7 +116,7 @@
   }
 
   function validateCatalog(catalog, manifest) {
-    if (!catalog || catalog.schema_version !== "1.0.0" || !Array.isArray(catalog.records)) {
+    if (!catalog || catalog.schema_version !== "2.0.0" || !Array.isArray(catalog.records) || !Array.isArray(catalog.sources)) {
       throw new Error("Catálogo incompatível com o contrato esperado.");
     }
     if (catalog.environment !== manifest.environment) {
@@ -127,10 +129,18 @@
       throw new Error("A quantidade de registros não corresponde ao manifesto.");
     }
 
+    if (catalog.sources.length !== manifest.source_count) {
+      throw new Error("A quantidade de fontes não corresponde ao manifesto.");
+    }
+
+    const sourceIdentifiers = new Set(catalog.sources.map((source) => source.id));
     const identifiers = new Set();
     for (const record of catalog.records) {
-      if (!record.public_id || !record.display_name || !["professional", "facility"].includes(record.type)) {
+      if (!record.public_id || !record.source_id || !record.display_name || !["professional", "facility"].includes(record.type)) {
         throw new Error("Há um registro obrigatório inválido no catálogo.");
+      }
+      if (!sourceIdentifiers.has(record.source_id)) {
+        throw new Error("Há um registro associado a uma fonte desconhecida.");
       }
       if (identifiers.has(record.public_id)) {
         throw new Error("Há identificadores públicos duplicados no catálogo.");
@@ -179,6 +189,7 @@
     state.specialty = params.get("especialidade") ?? "";
     state.region = params.get("regiao") ?? "";
     state.type = params.get("tipo") ?? "";
+    state.source = params.get("fonte") ?? "";
     state.sort = params.get("ordem") ?? "name";
 
     elements.query.value = state.query;
@@ -189,15 +200,20 @@
   function populateFilters() {
     const specialties = uniqueSorted(state.records.flatMap((record) => record.specialties.map((item) => item.name)));
     const regions = uniqueSorted(state.records.flatMap((record) => record.service_locations.map((location) => location.address.district)));
+    const sources = state.catalog.sources.map((source) => ({ value: source.id, label: source.name }));
 
     appendOptions(elements.specialty, specialties);
     appendOptions(elements.region, regions);
+    appendOptions(elements.source, sources);
 
     if (specialties.includes(state.specialty)) elements.specialty.value = state.specialty;
     else state.specialty = "";
 
     if (regions.includes(state.region)) elements.region.value = state.region;
     else state.region = "";
+
+    if (sources.some((source) => source.value === state.source)) elements.source.value = state.source;
+    else state.source = "";
 
     const commonSpecialties = ["Cardiologia", "Clínica médica", "Ginecologia", "Ortopedia", "Pediatria"]
       .filter((item) => specialties.includes(item));
@@ -212,11 +228,17 @@
   }
 
   function appendOptions(select, values) {
-    for (const value of values) {
-      const option = create("option", "", value);
+    for (const item of values) {
+      const value = typeof item === "string" ? item : item.value;
+      const label = typeof item === "string" ? item : item.label;
+      const option = create("option", "", label);
       option.value = value;
       select.append(option);
     }
+  }
+
+  function sourceName(sourceId) {
+    return state.catalog?.sources.find((source) => source.id === sourceId)?.name ?? "Fonte não identificada";
   }
 
   function updateMetrics() {
@@ -233,7 +255,8 @@
   }
 
   function updateDataStatus(manifest) {
-    elements.dataStatus.textContent = `${manifest.record_count} registros sintéticos`;
+    const sourceLabel = manifest.source_count === 1 ? "fonte" : "fontes";
+    elements.dataStatus.textContent = `${manifest.record_count.toLocaleString("pt-BR")} registros • ${manifest.source_count} ${sourceLabel}`;
     elements.updatedStatus.textContent = `Atualizada em ${formatDate(manifest.generated_at)}`;
 
     const ageInDays = (Date.now() - new Date(manifest.generated_at).getTime()) / 86_400_000;
@@ -247,6 +270,7 @@
       record.display_name,
       record.professional_registry?.council,
       record.professional_registry?.number,
+      sourceName(record.source_id),
       ...record.specialties.map((item) => item.name),
       ...record.service_locations.flatMap((location) => [
         location.facility_name,
@@ -263,6 +287,7 @@
     state.specialty = elements.specialty.value;
     state.region = elements.region.value;
     state.type = elements.type.value;
+    state.source = elements.source.value;
     state.sort = elements.sort.value;
     if (resetPage) state.page = 1;
 
@@ -272,7 +297,8 @@
       const matchesSpecialty = !state.specialty || record.specialties.some((item) => item.name === state.specialty);
       const matchesRegion = !state.region || record.service_locations.some((location) => location.address.district === state.region);
       const matchesType = !state.type || record.type === state.type;
-      return matchesQuery && matchesSpecialty && matchesRegion && matchesType;
+      const matchesSource = !state.source || record.source_id === state.source;
+      return matchesQuery && matchesSpecialty && matchesRegion && matchesType && matchesSource;
     });
 
     state.filtered.sort(compareRecords);
@@ -301,6 +327,7 @@
     if (state.specialty) params.set("especialidade", state.specialty);
     if (state.region) params.set("regiao", state.region);
     if (state.type) params.set("tipo", state.type);
+    if (state.source) params.set("fonte", state.source);
     if (state.sort !== "name") params.set("ordem", state.sort);
     const suffix = params.toString() ? `?${params}` : window.location.pathname;
     window.history.replaceState(null, "", suffix);
@@ -355,7 +382,7 @@
     );
 
     const action = create("div", "provider-card__action");
-    action.append(create("span", "network-status", "Rede demonstrativa"));
+    action.append(create("span", "network-status", sourceName(record.source_id)));
     const detailsButton = create("button", "details-button", "Ver detalhes");
     detailsButton.type = "button";
     detailsButton.dataset.recordId = record.public_id;
@@ -432,6 +459,7 @@
 
     const overview = create("section", "details-section");
     overview.append(create("h3", "", "Informações profissionais"));
+    overview.append(create("p", "", `Origem: ${sourceName(record.source_id)}`));
     const registry = registryText(record);
     if (registry) overview.append(create("p", "", registry));
     for (const specialty of record.specialties) {

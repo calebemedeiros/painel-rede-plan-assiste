@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Protótipo demonstrativo de consulta à rede de atendimento vinculada ao Plan-Assiste MPU.">
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://calebemedeiros.github.io; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests">
     <title>Rede de atendimento | Plan-Assiste MPU</title>
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="assets/styles.css">
@@ -44,15 +44,15 @@
           <div class="hero__copy">
             <div class="status-badge">
               <span class="status-badge__dot" aria-hidden="true"></span>
-              Ambiente demonstrativo
+              Sistema pronto para integração
             </div>
             <p class="eyebrow">Plan-Assiste MPU • Rede AMHPDF</p>
             <h1>Encontre atendimento por especialidade ou região</h1>
-            <p class="hero__lead">Uma consulta direta para localizar profissionais e estabelecimentos. Nesta versão, todos os registros são sintéticos e servem apenas para validar a proposta.</p>
+            <p class="hero__lead">Consulta integrada de profissionais e estabelecimentos, preparada para reunir a rede AMHPDF e bases próprias do Plan-Assiste em uma única experiência.</p>
           </div>
 
           <aside class="data-status" aria-label="Situação da base">
-            <span class="data-status__label">Base carregada</span>
+            <span class="data-status__label">Catálogo integrado</span>
             <strong id="status-base">Verificando...</strong>
             <span id="status-atualizacao">Aguarde</span>
           </aside>
@@ -102,6 +102,13 @@
                 </select>
               </div>
 
+              <div class="field">
+                <label for="fonte">Origem da rede</label>
+                <select id="fonte" name="fonte">
+                  <option value="">Todas as fontes</option>
+                </select>
+              </div>
+
               <button class="primary-button" type="submit">
                 <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m21 21-4.35-4.35m2.35-5.65a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"/></svg>
                 Pesquisar
@@ -122,7 +129,7 @@
             <p class="eyebrow">Visão da base</p>
             <div class="summary-card__metric">
               <strong id="total-registros">—</strong>
-              <span>registros demonstrativos</span>
+              <span>prestadores na base atual</span>
             </div>
             <dl class="summary-list">
               <div>
@@ -144,7 +151,7 @@
             </dl>
             <div class="summary-card__note">
               <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Zm0-14v4m0 4h.01"/></svg>
-              <p>A versão final deverá usar somente dados autorizados e manter visível a data de atualização.</p>
+              <p>Arquitetura pronta para receber novas bases autorizadas sem alterar a experiência de consulta.</p>
             </div>
           </aside>
 
@@ -208,7 +215,7 @@
         <div class="site-footer__links">
           <a href="https://planassiste.mpu.mp.br/" target="_blank" rel="noopener noreferrer">Portal Plan-Assiste</a>
           <a href="https://www.encontreseumedico.com.br/" target="_blank" rel="noopener noreferrer">Encontre Seu Médico</a>
-          <span>Protótipo acadêmico • Dados sintéticos</span>
+          <span>Demonstração de integração • Base sintética</span>
         </div>
       </div>
     </footer>

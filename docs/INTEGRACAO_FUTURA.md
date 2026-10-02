@@ -7,11 +7,11 @@ O painel usa o manifesto definido em `assets/config.js`:
 ```js
 window.APP_CONFIG = Object.freeze({
   applicationMode: "demo",
-  manifestUrl: "./data/manifest.json"
+  manifestUrl: "https://calebemedeiros.github.io/catalogo-demo-rede-plan-assiste/api/v1/manifest.json"
 });
 ```
 
-O navegador não conhece a API da AMHP e não recebe credenciais. Ele consulta apenas um catálogo público previamente validado.
+O navegador não conhece a API da AMHP e não recebe credenciais. Ele consulta uma API estática externa, verifica o manifesto e o SHA-256 e então abre o catálogo consolidado. A demonstração reúne uma fonte AMHPDF sintética e uma fonte direta sintética do Plan-Assiste.
 
 ## Mudança prevista na fase D2
 
@@ -66,4 +66,4 @@ O código recusa uma base de produção quando:
 - ambiente, contagem ou autorização divergem;
 - o SHA-256 não corresponde ao arquivo recebido.
 
-Na fase D2, deverão ser acrescentadas validação completa por JSON Schema, limites de variação entre versões, processo de rollback e revisão dos cabeçalhos de segurança.
+Na fase D2, deverão ser acrescentados limites de variação entre versões, processo institucional de rollback e revisão dos cabeçalhos de segurança. Os contratos JSON Schema da versão 2 já acompanham o catálogo demonstrativo.

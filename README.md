@@ -4,22 +4,23 @@ Protótipo acadêmico para validar uma consulta simplificada a profissionais e e
 
 ## Situação
 
-**Fase D1 — demonstração com dados sintéticos.**
+**Fase D1.2 — painel concluído para demonstração de integração.**
 
 - não é uma fonte oficial;
 - não contém dados de prestadores reais;
-- não consulta a API da AMHP;
+- consome uma API estática externa com dados sintéticos;
 - não contém dados de beneficiários;
 - não deve ser apresentado como serviço em produção.
 
 ## Funcionalidades
 
 - pesquisa por nome, especialidade, estabelecimento e localidade;
-- filtros por especialidade, região e tipo de prestador;
+- filtros por especialidade, região, tipo e origem da rede;
 - ordenação e paginação;
 - detalhes de locais e registros profissionais demonstrativos;
 - URLs compartilháveis com os filtros da consulta;
 - layout responsivo e navegação por teclado;
+- catálogo externo com 360 médicos, profissionais e estabelecimentos sintéticos;
 - integridade do catálogo verificada por SHA-256;
 - bloqueio de bases incompatíveis com o ambiente.
 
@@ -27,7 +28,6 @@ Protótipo acadêmico para validar uma consulta simplificada a profissionais e e
 
 ```text
 assets/                  interface, configuração e identidade visual
-data/                    manifesto e catálogo exclusivamente sintético
 docs/                    documentação da integração futura
 schemas/                 contratos de dados da fase C
 tests/                   validação automática da base demonstrativa
@@ -53,12 +53,15 @@ npm test
 
 O teste confirma:
 
+- ausência de dados incorporados ao repositório da interface;
+- configuração do catálogo externo por HTTPS;
 - ambiente demonstrativo;
-- quantidade de registros;
-- checksum SHA-256;
-- identificadores únicos;
-- ausência de campos internos proibidos;
-- identificação sintética de todos os registros.
+- Política de Segurança de Conteúdo compatível com a fonte;
+- presença dos bloqueios de autorização e integridade no cliente.
+
+## API demonstrativa
+
+O painel consome o manifesto publicado pelo repositório [catalogo-demo-rede-plan-assiste](https://github.com/calebemedeiros/catalogo-demo-rede-plan-assiste). A separação demonstra como o Plan-Assiste poderá incorporar novas bases sem reconstruir a interface.
 
 ## GitHub Pages
 

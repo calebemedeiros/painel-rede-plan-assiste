@@ -5,7 +5,7 @@
   "description": "Protótipo acadêmico de consulta à rede AMHPDF para o Plan-Assiste MPU.",
   "type": "module",
   "scripts": {
-    "test": "node tests/validate-data.mjs",
+    "test": "node tests/validate-app.mjs",
     "serve": "npx --yes http-server . -p 4173 -c-1"
   },
   "engines": {
