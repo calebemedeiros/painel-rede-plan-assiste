@@ -4,7 +4,7 @@ Protótipo acadêmico para validar uma consulta nacional e multifonte a profissi
 
 ## Situação
 
-**Fase D1.3 — consulta nacional multifonte concluída para demonstração.**
+**Fase D3 — interface refinada e arquitetura preparada para fontes públicas e institucionais autorizadas.**
 
 - não é uma fonte oficial;
 - não contém dados de prestadores reais;
@@ -20,6 +20,7 @@ Protótipo acadêmico para validar uma consulta nacional e multifonte a profissi
 - detalhes de locais e registros profissionais demonstrativos;
 - URLs compartilháveis com os filtros da consulta;
 - layout responsivo e navegação por teclado;
+- modal adaptável ao viewport, retorno do foco e preferência por movimento reduzido;
 - catálogo externo com 600 profissionais e estabelecimentos sintéticos em seis fontes;
 - diferenciação entre credenciamento direto, rede parceira, rede conveniada, intercâmbio regional e rede hospitalar;
 - aviso explícito de que a presença no catálogo não garante elegibilidade, autorização ou disponibilidade;
@@ -71,7 +72,7 @@ O fluxo `pages.yml` valida os dados e publica o conteúdo estático quando houve
 
 ## Evolução
 
-A troca para o catálogo autorizado exigirá aprovação específica da fase D2. Consulte [docs/INTEGRACAO_FUTURA.md](docs/INTEGRACAO_FUTURA.md) e [SECURITY.md](SECURITY.md).
+APIs públicas foram autorizadas tecnicamente para avaliação e integração. Cada fonte ainda precisa passar pela verificação de origem, termos, esquema, campos, atualização e ausência de dados sensíveis. Bases internas dependem do acesso e da governança definidos pelo Plan-Assiste. Consulte [docs/INTEGRACAO_FUTURA.md](docs/INTEGRACAO_FUTURA.md) e [SECURITY.md](SECURITY.md).
 
 ## Identidade e direitos
 

@@ -50,6 +50,10 @@ body {
   line-height: 1.5;
 }
 
+body.modal-open {
+  overflow: hidden;
+}
+
 button,
 input,
 select {
@@ -204,7 +208,7 @@ svg {
   grid-template-columns: minmax(0, 1fr) 270px;
   align-items: end;
   gap: 70px;
-  padding-block: 58px 74px;
+  padding-block: 46px 62px;
 }
 
 .hero .eyebrow {
@@ -214,9 +218,9 @@ svg {
 .hero h1 {
   max-width: 780px;
   margin: 10px 0 18px;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(2.2rem, 5vw, 4.2rem);
-  font-weight: 500;
+  font-family: inherit;
+  font-size: clamp(2.1rem, 4.5vw, 3.65rem);
+  font-weight: 720;
   letter-spacing: -0.035em;
   line-height: 1.03;
 }
@@ -306,9 +310,9 @@ svg {
 .guidance h2 {
   margin: 0;
   color: var(--brand-950);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: inherit;
   font-size: clamp(1.55rem, 3vw, 2rem);
-  font-weight: 500;
+  font-weight: 720;
   letter-spacing: -0.02em;
   line-height: 1.15;
 }
@@ -476,6 +480,20 @@ svg {
   gap: 34px;
 }
 
+.results-content,
+.summary-card,
+.provider-card,
+.provider-identity,
+.provider-meta {
+  min-width: 0;
+}
+
+.provider-card,
+.provider-card__footer,
+.details-modal {
+  overflow-wrap: anywhere;
+}
+
 .summary-card {
   position: sticky;
   top: 22px;
@@ -498,9 +516,9 @@ svg {
 }
 
 .summary-card__metric strong {
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: inherit;
   font-size: 2.9rem;
-  font-weight: 500;
+  font-weight: 720;
   line-height: 1;
 }
 
@@ -895,13 +913,18 @@ svg {
 
 .details-modal {
   width: min(690px, calc(100% - 32px));
-  max-height: min(82vh, 780px);
+  max-height: calc(100dvh - 32px);
   padding: 0;
   color: var(--ink-950);
   background: var(--surface);
   border: 0;
   border-radius: var(--radius-lg);
   box-shadow: 0 30px 90px rgba(9, 35, 32, 0.35);
+}
+
+.details-modal[open] {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
 }
 
 .details-modal::backdrop {
@@ -921,9 +944,9 @@ svg {
 .details-modal__header h2 {
   margin: 0;
   color: var(--brand-950);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: inherit;
   font-size: 1.7rem;
-  font-weight: 500;
+  font-weight: 720;
 }
 
 .icon-button {
@@ -941,9 +964,33 @@ svg {
 
 .details-modal__body {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
   gap: 22px;
   padding: 25px 28px 30px;
-  overflow-y: auto;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+.details-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 28px;
+  background: var(--surface-soft);
+  border-top: 1px solid var(--line);
+}
+
+.details-modal__footer p {
+  margin: 0;
+  color: var(--ink-600);
+  font-size: 0.76rem;
+}
+
+.details-modal__footer .primary-button {
+  min-height: 42px;
 }
 
 .details-section h3 {
@@ -1008,7 +1055,8 @@ svg {
 
 @media (max-width: 780px) {
   .page-width {
-    width: min(100% - 28px, var(--page-width));
+    width: auto;
+    margin-inline: 14px;
   }
 
   .government-bar__support,
@@ -1115,6 +1163,43 @@ svg {
 
   .summary-list {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .details-modal {
+    width: calc(100% - 20px);
+    max-height: calc(100dvh - 20px);
+    border-radius: var(--radius-md);
+  }
+
+  .details-modal__header,
+  .details-modal__body,
+  .details-modal__footer {
+    padding-inline: 20px;
+  }
+
+  .details-modal__body {
+    grid-template-columns: 1fr;
+  }
+
+  .details-modal__footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }
 

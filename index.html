@@ -42,17 +42,17 @@
       <section class="hero">
         <div class="page-width hero__content">
           <div class="hero__copy">
-            <div class="status-badge">
+            <div class="status-badge" id="identificacao-ambiente">
               <span class="status-badge__dot" aria-hidden="true"></span>
-              Sistema pronto para integração
+              Ambiente demonstrativo
             </div>
             <p class="eyebrow">Plan-Assiste MPU • Abrangência nacional</p>
             <h1>Encontre atendimento em todo o Brasil</h1>
-            <p class="hero__lead">Consulta integrada de profissionais, unidades e redes de atendimento, preparada para reunir credenciamentos diretos, redes conveniadas e fontes regionais em uma única experiência.</p>
+            <p class="hero__lead">Consulte profissionais, unidades e redes de atendimento por especialidade e localidade. Os resultados identificam a origem da informação e a forma de acesso.</p>
           </div>
 
           <aside class="data-status" aria-label="Situação da base">
-            <span class="data-status__label">Catálogo integrado</span>
+              <span class="data-status__label">Situação dos dados</span>
             <strong id="status-base">Verificando...</strong>
             <span id="status-atualizacao">Aguarde</span>
           </aside>
@@ -65,9 +65,9 @@
             <div class="search-panel__heading">
               <div>
                 <p class="eyebrow">Pesquisa</p>
-                <h2 id="titulo-busca">O que você procura?</h2>
+                <h2 id="titulo-busca">Encontre um atendimento</h2>
               </div>
-              <button class="text-button" id="limpar-busca" type="button">Limpar filtros</button>
+              <button class="text-button" id="limpar-busca" type="button" aria-label="Limpar todos os filtros da consulta">Limpar filtros</button>
             </div>
 
             <form id="form-busca" class="search-form" role="search">
@@ -165,7 +165,7 @@
             </dl>
             <div class="summary-card__note">
               <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Zm0-14v4m0 4h.01"/></svg>
-              <p>Catálogo multifonte preparado para novas bases autorizadas e diferentes formas de vínculo.</p>
+                <p>As fontes são exibidas separadamente para facilitar a confirmação nos canais responsáveis.</p>
             </div>
           </aside>
 
@@ -173,7 +173,7 @@
             <div class="results-header">
               <div>
                 <p class="eyebrow">Resultados</p>
-                <h2 id="titulo-resultados" tabindex="-1">Prestadores encontrados</h2>
+                <h2 id="titulo-resultados" tabindex="-1">Resultados da consulta</h2>
                 <p id="resumo-resultados" aria-live="polite">Carregando registros...</p>
               </div>
               <div class="field field--compact">
@@ -234,7 +234,7 @@
       </div>
     </footer>
 
-    <dialog id="detalhes-modal" class="details-modal" aria-labelledby="detalhes-titulo">
+    <dialog id="detalhes-modal" class="details-modal" aria-labelledby="detalhes-titulo" aria-describedby="detalhes-orientacao">
       <div class="details-modal__header">
         <div>
           <span id="detalhes-tipo" class="provider-type"></span>
@@ -243,6 +243,10 @@
         <button id="fechar-modal" class="icon-button" type="button" aria-label="Fechar detalhes">×</button>
       </div>
       <div id="detalhes-conteudo" class="details-modal__body"></div>
+      <div class="details-modal__footer">
+        <p id="detalhes-orientacao">Confirme cobertura, elegibilidade e disponibilidade antes do atendimento.</p>
+        <button id="concluir-modal" class="primary-button" type="button">Concluir</button>
+      </div>
     </dialog>
   </body>
 </html>

@@ -13,9 +13,9 @@ window.APP_CONFIG = Object.freeze({
 
 O navegador não recebe credenciais. Ele consulta uma API estática externa, verifica o manifesto e o SHA-256 e então abre o catálogo consolidado. A demonstração reúne seis fontes sintéticas de abrangência nacional e regional e separa origem, vínculo, abrangência e modalidade de acesso.
 
-## Mudança prevista na fase D2
+## Adaptadores previstos na fase D3
 
-Após autorização, a configuração poderá apontar para um armazenamento externo:
+Uma API pública verificada ou um catálogo institucional poderá alimentar um adaptador executado fora do navegador. O painel deverá continuar recebendo apenas o contrato normalizado e validado:
 
 ```js
 window.APP_CONFIG = Object.freeze({
@@ -24,7 +24,7 @@ window.APP_CONFIG = Object.freeze({
 });
 ```
 
-O domínio é apenas ilustrativo. Nenhum endereço deve ser ativado antes da definição do serviço institucional ou aprovado.
+O domínio é apenas ilustrativo. APIs públicas estão autorizadas para integração técnica, mas somente serão ativadas após a identificação da origem, revisão de termos, validação de campos e registro da atualização. Fontes internas exigem serviço e governança definidos pelo Plan-Assiste.
 
 ## Processo de atualização
 
@@ -66,4 +66,4 @@ O código recusa uma base de produção quando:
 - ambiente, contagem ou autorização divergem;
 - o SHA-256 não corresponde ao arquivo recebido.
 
-Na fase D2, deverão ser acrescentados limites de variação entre versões, processo institucional de rollback e revisão dos cabeçalhos de segurança. Os contratos JSON Schema da versão 3 já acompanham o catálogo demonstrativo.
+Antes da produção, deverão ser acrescentados limites de variação entre versões, processo institucional de rollback e revisão dos cabeçalhos de segurança. Os contratos JSON Schema da versão 3 já acompanham o catálogo demonstrativo.

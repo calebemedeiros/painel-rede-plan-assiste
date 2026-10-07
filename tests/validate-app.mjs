@@ -24,6 +24,9 @@ assert(app.includes("authorization"), "Bloqueio de autorização ausente.");
 assert(app.includes("source_id"), "Integração multifonte ausente.");
 assert(app.includes('schema_version !== "3.0.0"'), "Contrato v3 não configurado.");
 assert(app.includes("network_links"), "Vínculos de rede não configurados.");
+assert(html.includes('id="concluir-modal"'), "Ação de conclusão do modal não encontrada.");
+assert(app.includes('addEventListener("close"'), "Restauração de foco do modal não encontrada.");
+assert(html.includes("Ambiente demonstrativo"), "Identificação do ambiente não encontrada.");
 
 for (const file of ["data/manifest.json", "data/catalogo-demo-v1.json"]) {
   try {

@@ -1,8 +1,8 @@
 {
   "name": "painel-rede-plan-assiste",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
-  "description": "Protótipo acadêmico de consulta à rede AMHPDF para o Plan-Assiste MPU.",
+  "description": "Painel acadêmico de consulta nacional e multifonte à rede assistencial do Plan-Assiste MPU.",
   "type": "module",
   "scripts": {
     "test": "node tests/validate-app.mjs",

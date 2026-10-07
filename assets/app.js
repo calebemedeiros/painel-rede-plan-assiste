@@ -48,8 +48,11 @@
     modalTitle: document.querySelector("#detalhes-titulo"),
     modalType: document.querySelector("#detalhes-tipo"),
     modalContent: document.querySelector("#detalhes-conteudo"),
-    closeModal: document.querySelector("#fechar-modal")
+    closeModal: document.querySelector("#fechar-modal"),
+    concludeModal: document.querySelector("#concluir-modal")
   };
+
+  let modalTrigger = null;
 
   const normalize = (value) => String(value ?? "")
     .normalize("NFD")
@@ -239,6 +242,10 @@
 
   function sourceName(sourceId) {
     return state.catalog?.sources.find((source) => source.id === sourceId)?.name ?? "Fonte não identificada";
+  }
+
+  function sourceDetails(sourceId) {
+    return state.catalog?.sources.find((source) => source.id === sourceId) ?? null;
   }
 
   function updateMetrics() {
@@ -457,10 +464,12 @@
     const network = create("section", "details-section");
     network.append(create("h3", "", "Origem e forma de acesso"));
     for (const link of record.network_links) {
+      const source = sourceDetails(link.source_id);
       network.append(
         create("p", "", `Origem: ${sourceName(link.source_id)}`),
         create("p", "", `Vínculo: ${link.relationship_label} • ${link.access_mode}`),
-        create("p", "", `Abrangência: ${link.coverage_scope === "national" ? "Nacional" : "Regional"}`)
+        create("p", "", `Abrangência: ${link.coverage_scope === "national" ? "Nacional" : "Regional"}`),
+        create("p", "", `Situação da fonte: ${source?.status === "synthetic-demo" ? "demonstração com dados sintéticos" : "fonte autorizada"}`)
       );
     }
     network.append(create("p", "", `Informação atualizada em ${formatDate(record.source_updated_at)}.`));
@@ -486,7 +495,10 @@
       create("p", "", "Registro inteiramente sintético. Esta demonstração não representa a rede oficial nem garantia de cobertura.")
     );
     elements.modalContent.append(notice);
+    modalTrigger = document.activeElement;
+    document.body.classList.add("modal-open");
     elements.modal.showModal();
+    elements.closeModal.focus();
   }
 
   function clearFilters() {
@@ -534,9 +546,16 @@
     renderResults();
     elements.resultTitle.scrollIntoView({ behavior: "smooth", block: "start" });
   });
-  elements.closeModal.addEventListener("click", () => elements.modal.close());
+  const closeDetails = () => elements.modal.close();
+  elements.closeModal.addEventListener("click", closeDetails);
+  elements.concludeModal.addEventListener("click", closeDetails);
   elements.modal.addEventListener("click", (event) => {
     if (event.target === elements.modal) elements.modal.close();
+  });
+  elements.modal.addEventListener("close", () => {
+    document.body.classList.remove("modal-open");
+    if (modalTrigger instanceof HTMLElement) modalTrigger.focus();
+    modalTrigger = null;
   });
 
   loadData();

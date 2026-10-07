@@ -1,8 +1,8 @@
 # Segurança do painel
 
-## Escopo da fase D1.3
+## Escopo da fase D3
 
-Este repositório aceita somente dados sintéticos. Não envie extrações da AMHP, dados de prestadores reais, credenciais, dados de beneficiários ou informações assistenciais.
+Este repositório de interface não recebe bases incorporadas. Não envie extrações, credenciais, dados de beneficiários ou informações assistenciais. Fontes públicas e institucionais devem ser normalizadas e publicadas por um processo externo controlado.
 
 ## Controles ativos
 
@@ -23,12 +23,12 @@ Durante a fase acadêmica, registre o problema diretamente com o responsável pe
 
 Não inclua dados pessoais, credenciais ou cópias da base em uma issue pública.
 
-## Produção
+## Fontes públicas e produção
 
-A alteração de `applicationMode` para `production` não é suficiente para colocar o projeto em produção. A fase D2 depende de:
+ A alteração de `applicationMode` para `production` não é suficiente para colocar o projeto em produção. Uma fonte pública deve ter origem, termos, finalidade, campos e atualização verificados. A produção também depende de:
 
-- autorização escrita da AMHP;
-- anuência do Plan-Assiste;
+- autorização ou caráter público verificável da fonte;
+- validação do Plan-Assiste;
 - armazenamento externo aprovado;
 - referência documental no manifesto;
 - revisão de CORS e da Política de Segurança de Conteúdo;
