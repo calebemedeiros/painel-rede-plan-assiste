@@ -1,8 +1,9 @@
-name: Validar e publicar demonstração
+name: Validar e publicar painel
 
 on:
   push:
     branches: ["main"]
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -11,42 +12,42 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - name: Obter o repositório
-        uses: actions/checkout@v4
-
-      - name: Preparar Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
-
-      - name: Validar contrato e dados sintéticos
-        run: npm test
+          node-version: 24
+          cache: npm
+      - run: npm test
+      - run: npm run build
+        env:
+          CATALOG_MANIFEST_URL: https://calebemedeiros.github.io/catalogo-demo-rede-plan-assiste/api/v2/manifest.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: painel-rede-plan-assiste
+          path: dist
 
   deploy:
+    if: github.event_name != 'pull_request'
     needs: validate
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Obter o repositório
-        uses: actions/checkout@v4
-
-      - name: Configurar GitHub Pages
-        uses: actions/configure-pages@v5
-
-      - name: Preparar artefato estático
-        uses: actions/upload-pages-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
-          path: .
-
-      - name: Publicar no GitHub Pages
-        id: deployment
+          name: painel-rede-plan-assiste
+          path: dist
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - id: deployment
         uses: actions/deploy-pages@v4

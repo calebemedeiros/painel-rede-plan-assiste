@@ -1,79 +1,40 @@
-# Painel da rede Plan-Assiste — demonstração
+# Painel Nacional da Rede Assistencial do Plan-Assiste
 
-Protótipo acadêmico para validar uma consulta nacional e multifonte a profissionais e estabelecimentos relacionados à rede de atendimento do Plan-Assiste MPU.
+Interface estática para consulta pública de prestadores, estabelecimentos, redes, especialidades e procedimentos relacionados à rede assistencial do Plan-Assiste MPU.
 
-## Situação
+## Estado da versão
 
-**Fase D3 — interface refinada e arquitetura preparada para fontes públicas e institucionais autorizadas.**
-
-- não é uma fonte oficial;
-- não contém dados de prestadores reais;
-- consome uma API estática externa com dados sintéticos;
-- não contém dados de beneficiários;
-- não deve ser apresentado como serviço em produção.
+Versão `1.0.0-rc.1`, candidata à produção. O navegador consome somente o catálogo público processado e aprovado. Não consulta as APIs de origem, não usa credenciais e não registra dados de beneficiários.
 
 ## Funcionalidades
 
-- pesquisa por nome, especialidade, estabelecimento e localidade;
-- filtros por especialidade, estado, município, tipo, origem e forma de acesso;
-- ordenação e paginação;
-- detalhes de locais e registros profissionais demonstrativos;
-- URLs compartilháveis com os filtros da consulta;
-- layout responsivo e navegação por teclado;
-- modal adaptável ao viewport, retorno do foco e preferência por movimento reduzido;
-- catálogo externo com 600 profissionais e estabelecimentos sintéticos em seis fontes;
-- diferenciação entre credenciamento direto, rede parceira, rede conveniada, intercâmbio regional e rede hospitalar;
-- aviso explícito de que a presença no catálogo não garante elegibilidade, autorização ou disponibilidade;
-- integridade do catálogo verificada por SHA-256;
-- bloqueio de bases incompatíveis com o ambiente.
+- pesquisa sem diferenciação de acentos por prestador, estabelecimento, especialidade, procedimento ou código TUSS;
+- indicação de prestadores de especialidades relacionadas ao procedimento, sem afirmar execução ou cobertura;
+- filtros por UF, município, rede, vínculo, modalidade, tipo e prefixo predefinido de intercâmbio Unimed;
+- filtros persistidos na URL;
+- origem, atualização e link do guia oficial em cada detalhe;
+- verificação SHA-256 do manifesto, recursos e fragmentos de prestadores;
+- navegação por teclado, modal nativo, layout responsivo e CSP restritiva.
 
-## Estrutura
+## Desenvolvimento
 
-```text
-assets/                  interface, configuração e identidade visual
-docs/                    documentação da integração futura
-schemas/                 contratos de dados da fase C
-tests/                   validação automática da base demonstrativa
-.github/workflows/       validação e publicação no GitHub Pages
-index.html               entrada da aplicação
-```
-
-## Executar localmente
-
-Use um servidor HTTP; navegadores bloqueiam `fetch` quando a página é aberta diretamente como arquivo.
+Sirva a pasta `03_Projeto_em_Desenvolvimento` para que o painel e o catálogo irmão fiquem sob a mesma origem:
 
 ```powershell
-npx --yes http-server . -p 4173 -c-1
+npx --yes http-server .. -p 4173 -c-1
 ```
 
-Depois acesse `http://localhost:4173`.
-
-## Validar
+Validação e build:
 
 ```powershell
 npm test
+npm run build
 ```
 
-O teste confirma:
+O conteúdo de `dist/` pode ser publicado no GitHub Pages ou copiado pela DTI para um subdiretório institucional. Os caminhos de interface são relativos; a URL do manifesto fica isolada em `assets/config.js`.
 
-- ausência de dados incorporados ao repositório da interface;
-- configuração do catálogo externo por HTTPS;
-- ambiente demonstrativo;
-- Política de Segurança de Conteúdo compatível com a fonte;
-- presença dos bloqueios de autorização e integridade no cliente.
+## Governança
 
-## API demonstrativa
+Alterações de código e fontes devem passar por pull request. O catálogo aplica lista positiva de campos, checksums e quarentena. Redes sem API estável continuam representadas por seu guia oficial. A presença no painel não confirma elegibilidade, autorização, cobertura, execução do procedimento ou disponibilidade.
 
-O painel consome o manifesto publicado pelo repositório [catalogo-demo-rede-plan-assiste](https://github.com/calebemedeiros/catalogo-demo-rede-plan-assiste). A separação demonstra como o Plan-Assiste poderá incorporar novas bases sem reconstruir a interface.
-
-## GitHub Pages
-
-O fluxo `pages.yml` valida os dados e publica o conteúdo estático quando houver envio para a branch `main`. No repositório do GitHub, a origem do Pages deverá ser configurada como **GitHub Actions**.
-
-## Evolução
-
-APIs públicas foram autorizadas tecnicamente para avaliação e integração. Cada fonte ainda precisa passar pela verificação de origem, termos, esquema, campos, atualização e ausência de dados sensíveis. Bases internas dependem do acesso e da governança definidos pelo Plan-Assiste. Consulte [docs/INTEGRACAO_FUTURA.md](docs/INTEGRACAO_FUTURA.md) e [SECURITY.md](SECURITY.md).
-
-## Identidade e direitos
-
-A marca Plan-Assiste é utilizada somente para composição do protótipo acadêmico e permanece sujeita à validação institucional. A eventual publicação institucional dependerá da autorização de uso da marca e da aprovação das áreas responsáveis.
+Consulte [documentação de implantação](docs/IMPLANTACAO_DTI.md) e [política de segurança](SECURITY.md).

@@ -339,6 +339,26 @@ svg {
   margin-top: 24px;
 }
 
+.procedure-context {
+  margin-top: 20px;
+  padding: 18px 20px;
+  color: var(--ink-800);
+  background: #f0f7f5;
+  border: 1px solid #b7d8cf;
+  border-left: 4px solid var(--brand-600);
+  border-radius: var(--radius-sm);
+}
+
+.procedure-context p {
+  margin: 6px 0;
+}
+
+.procedure-context small {
+  display: block;
+  margin-top: 10px;
+  color: var(--ink-600);
+}
+
 .field--search {
   grid-column: span 2;
 }
@@ -968,9 +988,7 @@ svg {
   align-content: start;
   gap: 22px;
   padding: 25px 28px 30px;
-  overflow: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--line-strong) transparent;
+  overflow: visible;
 }
 
 .details-modal__footer {
@@ -1005,6 +1023,7 @@ svg {
   margin: 4px 0;
   color: var(--ink-700);
   font-size: 0.88rem;
+  white-space: pre-line;
 }
 
 .location-card {

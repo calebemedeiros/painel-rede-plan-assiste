@@ -3,9 +3,9 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Consulta nacional demonstrativa e multifonte da rede de atendimento vinculada ao Plan-Assiste MPU.">
+    <meta name="description" content="Consulta nacional da rede assistencial vinculada ao Plan-Assiste MPU, com fontes públicas verificadas.">
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://calebemedeiros.github.io; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: https://planassiste.mpu.mp.br; connect-src 'self' https://calebemedeiros.github.io; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
     <title>Rede de atendimento | Plan-Assiste MPU</title>
     <link rel="icon" href="https://planassiste.mpu.mp.br/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="assets/styles.css">
@@ -44,11 +44,11 @@
           <div class="hero__copy">
             <div class="status-badge" id="identificacao-ambiente">
               <span class="status-badge__dot" aria-hidden="true"></span>
-              Ambiente demonstrativo
+              Dados públicos verificados
             </div>
             <p class="eyebrow">Plan-Assiste MPU • Abrangência nacional</p>
             <h1>Encontre atendimento em todo o Brasil</h1>
-            <p class="hero__lead">Consulte profissionais, unidades e redes de atendimento por especialidade e localidade. Os resultados identificam a origem da informação e a forma de acesso.</p>
+            <p class="hero__lead">Consulte profissionais, estabelecimentos e redes por nome, especialidade, localidade ou procedimento. Cada resultado informa a fonte e a forma de acesso.</p>
           </div>
 
           <aside class="data-status" aria-label="Situação da base">
@@ -72,10 +72,11 @@
 
             <form id="form-busca" class="search-form" role="search">
               <div class="field field--search">
-                <label for="consulta">Nome, especialidade ou estabelecimento</label>
+                <label for="consulta">Prestador, estabelecimento, especialidade ou procedimento</label>
                 <div class="input-with-icon">
                   <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m21 21-4.35-4.35m2.35-5.65a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z"/></svg>
-                  <input id="consulta" name="q" type="search" autocomplete="off" placeholder="Ex.: cardiologia ou clínica">
+                  <input id="consulta" name="q" type="search" autocomplete="off" list="sugestoes-busca" placeholder="Ex.: cardiologia, consulta ou código TUSS">
+                  <datalist id="sugestoes-busca"></datalist>
                 </div>
               </div>
 
@@ -110,9 +111,25 @@
               </div>
 
               <div class="field">
-                <label for="fonte">Origem da rede</label>
-                <select id="fonte" name="fonte">
-                  <option value="">Todas as fontes</option>
+                <label for="fonte">Rede</label>
+                <select id="fonte" name="rede">
+                  <option value="">Todas as redes</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="modalidade">Atendimento</label>
+                <select id="modalidade" name="modalidade">
+                  <option value="">Presencial e remoto</option>
+                  <option value="in_person">Presencial</option>
+                  <option value="remote">Remoto</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="prefixo">Prefixo da rede Unimed</label>
+                <select id="prefixo" name="prefixo">
+                  <option value="">Selecione, se aplicável</option>
                 </select>
               </div>
 
@@ -128,6 +145,8 @@
                 Pesquisar
               </button>
             </form>
+
+            <div id="contexto-procedimento" class="procedure-context" hidden aria-live="polite"></div>
 
             <div class="quick-search" aria-label="Atalhos por especialidade">
               <span>Buscas frequentes</span>
@@ -229,7 +248,7 @@
         <div class="site-footer__links">
           <a href="https://planassiste.mpu.mp.br/" target="_blank" rel="noopener noreferrer">Portal Plan-Assiste</a>
           <a href="https://www.encontreseumedico.com.br/" target="_blank" rel="noopener noreferrer">Encontre Seu Médico</a>
-          <span>Demonstração de integração • Base sintética</span>
+          <span>Catálogo público versionado • Contrato 4.0.0</span>
         </div>
       </div>
     </footer>

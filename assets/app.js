@@ -1,562 +1,127 @@
 (() => {
   "use strict";
-
   const config = window.APP_CONFIG;
-  const state = {
-    catalog: null,
-    records: [],
-    filtered: [],
-    page: 1,
-    query: "",
-    specialty: "",
-    stateCode: "",
-    city: "",
-    type: "",
-    source: "",
-    relationship: "",
-    sort: "name"
+  const state = { records: [], procedures: [], specialties: [], networks: [], sources: [], filtered: [], page: 1, procedureMatches: [] };
+  const $ = (selector) => document.querySelector(selector);
+  const el = {
+    form: $("#form-busca"), query: $("#consulta"), suggestions: $("#sugestoes-busca"), specialty: $("#especialidade"), state: $("#estado"), city: $("#municipio"), type: $("#tipo"), network: $("#fonte"), relationship: $("#vinculo"), modality: $("#modalidade"), prefix: $("#prefixo"), sort: $("#ordenacao"), clear: $("#limpar-busca"), clearEmpty: $("#limpar-vazio"), quick: $("#atalhos-especialidades"), list: $("#lista-resultados"), pagination: $("#paginacao"), empty: $("#sem-resultados"), summary: $("#resumo-resultados"), title: $("#titulo-resultados"), error: $("#aviso-erro"), errorMessage: $("#mensagem-erro"), status: $("#status-base"), updated: $("#status-atualizacao"), procedureContext: $("#contexto-procedimento"), total: $("#total-registros"), professionals: $("#total-profissionais"), facilities: $("#total-estabelecimentos"), states: $("#total-estados"), sourceCount: $("#total-fontes"), modal: $("#detalhes-modal"), modalTitle: $("#detalhes-titulo"), modalType: $("#detalhes-tipo"), modalContent: $("#detalhes-conteudo"), closeModal: $("#fechar-modal"), concludeModal: $("#concluir-modal")
   };
-
-  const elements = {
-    form: document.querySelector("#form-busca"),
-    query: document.querySelector("#consulta"),
-    specialty: document.querySelector("#especialidade"),
-    state: document.querySelector("#estado"),
-    city: document.querySelector("#municipio"),
-    type: document.querySelector("#tipo"),
-    source: document.querySelector("#fonte"),
-    relationship: document.querySelector("#vinculo"),
-    sort: document.querySelector("#ordenacao"),
-    clear: document.querySelector("#limpar-busca"),
-    clearEmpty: document.querySelector("#limpar-vazio"),
-    quickSearch: document.querySelector("#atalhos-especialidades"),
-    list: document.querySelector("#lista-resultados"),
-    pagination: document.querySelector("#paginacao"),
-    empty: document.querySelector("#sem-resultados"),
-    resultSummary: document.querySelector("#resumo-resultados"),
-    resultTitle: document.querySelector("#titulo-resultados"),
-    error: document.querySelector("#aviso-erro"),
-    errorMessage: document.querySelector("#mensagem-erro"),
-    dataStatus: document.querySelector("#status-base"),
-    updatedStatus: document.querySelector("#status-atualizacao"),
-    totalRecords: document.querySelector("#total-registros"),
-    totalProfessionals: document.querySelector("#total-profissionais"),
-    totalFacilities: document.querySelector("#total-estabelecimentos"),
-    totalStates: document.querySelector("#total-estados"),
-    totalSources: document.querySelector("#total-fontes"),
-    modal: document.querySelector("#detalhes-modal"),
-    modalTitle: document.querySelector("#detalhes-titulo"),
-    modalType: document.querySelector("#detalhes-tipo"),
-    modalContent: document.querySelector("#detalhes-conteudo"),
-    closeModal: document.querySelector("#fechar-modal"),
-    concludeModal: document.querySelector("#concluir-modal")
-  };
-
   let modalTrigger = null;
+  const normalize = (value) => String(value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("pt-BR").trim();
+  const unique = (values) => [...new Set(values.filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b), "pt-BR"));
+  const create = (tag, className, value) => { const node = document.createElement(tag); if (className) node.className = className; if (value !== undefined) node.textContent = value; return node; };
+  const formatDate = (value) => new Intl.DateTimeFormat("pt-BR").format(new Date(value));
+  const networkById = (id) => state.networks.find((item) => item.network_id === id);
+  const sourceById = (id) => state.sources.find((item) => item.source_id === id);
+  const specialtyById = (id) => state.specialties.find((item) => item.specialty_id === id);
 
-  const normalize = (value) => String(value ?? "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLocaleLowerCase("pt-BR")
-    .trim();
-
-  const uniqueSorted = (values) => [...new Set(values.filter(Boolean))]
-    .sort((a, b) => a.localeCompare(b, "pt-BR"));
-
-  const formatDate = (value) => new Intl.DateTimeFormat("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric"
-  }).format(new Date(value));
-
-  const create = (tag, className, text) => {
-    const node = document.createElement(tag);
-    if (className) node.className = className;
-    if (text !== undefined) node.textContent = text;
-    return node;
-  };
-
-  const icon = (path) => {
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("aria-hidden", "true");
-    svg.setAttribute("viewBox", "0 0 24 24");
-    const pathNode = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    pathNode.setAttribute("d", path);
-    svg.append(pathNode);
-    return svg;
-  };
-
-  async function sha256(text) {
-    if (!window.crypto?.subtle) throw new Error("O navegador não oferece verificação criptográfica da base.");
-    const bytes = new TextEncoder().encode(text);
-    const hash = await window.crypto.subtle.digest("SHA-256", bytes);
+  async function sha256(value) {
+    if (!crypto?.subtle) throw new Error("Este navegador não permite verificar a integridade da base.");
+    const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
     return [...new Uint8Array(hash)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
   }
-
+  async function fetchVerified(resource, baseUrl) {
+    const url = new URL(resource.url, baseUrl);
+    const response = await fetch(url, { cache: "no-store", credentials: "omit" });
+    if (!response.ok) throw new Error(`Recurso indisponível (${response.status}).`);
+    const payload = await response.text();
+    if (resource.checksum_sha256 && await sha256(payload) !== resource.checksum_sha256) throw new Error("A integridade de um recurso não pôde ser confirmada.");
+    return { data: JSON.parse(payload), url };
+  }
   function validateManifest(manifest) {
-    const required = ["schema_version", "environment", "generated_at", "catalog_url", "record_count", "source_count", "checksum_sha256", "authorization"];
-    if (!manifest || required.some((key) => !(key in manifest))) throw new Error("Manifesto de dados incompleto.");
-    if (manifest.schema_version !== "3.0.0") throw new Error("Versão do manifesto não suportada.");
-    if (manifest.environment !== config.applicationMode) throw new Error("O ambiente do manifesto não corresponde à aplicação.");
-    if (config.applicationMode === "demo" && manifest.authorization?.status !== "synthetic-demo") {
-      throw new Error("A demonstração recusou uma base sem identificação sintética.");
-    }
-    if (config.applicationMode === "production") {
-      if (manifest.authorization?.status !== "authorized" || !manifest.authorization?.reference) {
-        throw new Error("A publicação de produção não possui autorização registrada.");
-      }
-      if (!String(manifest.catalog_url).startsWith("https://")) throw new Error("A base de produção deve usar HTTPS.");
-    }
-    if (!/^[a-f0-9]{64}$/.test(manifest.checksum_sha256)) throw new Error("Resumo criptográfico inválido.");
-  }
-
-  function validateCatalog(catalog, manifest) {
-    if (!catalog || catalog.schema_version !== "3.0.0" || !Array.isArray(catalog.records) || !Array.isArray(catalog.sources)) {
-      throw new Error("Catálogo incompatível com o contrato esperado.");
-    }
-    if (catalog.environment !== manifest.environment || catalog.authorization?.status !== manifest.authorization.status) {
-      throw new Error("Catálogo e manifesto possuem ambientes ou autorizações diferentes.");
-    }
-    if (catalog.records.length !== manifest.record_count || catalog.record_count !== manifest.record_count) {
-      throw new Error("A quantidade de registros não corresponde ao manifesto.");
-    }
-    if (catalog.sources.length !== manifest.source_count || catalog.notices?.synthetic_data !== true) {
-      throw new Error("Fontes ou avisos obrigatórios estão ausentes.");
-    }
-
-    const sourceIds = new Set(catalog.sources.map((source) => source.id));
-    const recordIds = new Set();
-    for (const record of catalog.records) {
-      if (!record.public_id || !record.display_name || !["professional", "facility"].includes(record.type)) {
-        throw new Error("Há um registro obrigatório inválido.");
-      }
-      if (!sourceIds.has(record.source_id) || recordIds.has(record.public_id)) {
-        throw new Error("Há uma fonte desconhecida ou identificador duplicado.");
-      }
-      if (!Array.isArray(record.network_links) || !record.network_links.length ||
-          record.network_links.some((link) => !sourceIds.has(link.source_id) || link.verification_required !== true)) {
-        throw new Error("Há um vínculo de rede inválido.");
-      }
-      recordIds.add(record.public_id);
+    if (manifest?.schema_version !== "4.0.0" || manifest.environment !== "production") throw new Error("Contrato de dados incompatível.");
+    if (manifest.publication_status !== "approved" || manifest.authorization?.status !== "authorized") throw new Error("A versão disponível não está aprovada para publicação.");
+    for (const name of ["providers", "procedures", "networks", "specialties", "sources"]) {
+      if (!manifest.resources?.[name]?.url || !/^[a-f0-9]{64}$/.test(manifest.resources[name].checksum_sha256)) throw new Error(`Recurso obrigatório inválido: ${name}.`);
     }
   }
-
   async function loadData() {
     try {
-      const manifestUrl = new URL(config.manifestUrl, window.location.href);
-      const manifestResponse = await fetch(manifestUrl, { cache: "no-store", credentials: "omit" });
-      if (!manifestResponse.ok) throw new Error(`Manifesto indisponível (${manifestResponse.status}).`);
-      const manifest = await manifestResponse.json();
-      validateManifest(manifest);
-
-      const catalogUrl = new URL(manifest.catalog_url, manifestUrl);
-      const catalogResponse = await fetch(catalogUrl, { cache: "no-store", credentials: "omit" });
-      if (!catalogResponse.ok) throw new Error(`Catálogo indisponível (${catalogResponse.status}).`);
-      const catalogText = await catalogResponse.text();
-      if (await sha256(catalogText) !== manifest.checksum_sha256) {
-        throw new Error("A integridade do catálogo não pôde ser confirmada.");
-      }
-
-      const catalog = JSON.parse(catalogText);
-      validateCatalog(catalog, manifest);
-      state.catalog = catalog;
-      state.records = catalog.records;
-      loadInitialFilters();
-      populateFilters();
-      updateMetrics();
-      updateDataStatus(manifest);
-      applyFilters(false);
-    } catch (error) {
-      showError(error instanceof Error ? error.message : "Erro desconhecido ao carregar a base.");
-    }
+      const manifestUrl = new URL(config.manifestUrl, location.href);
+      const response = await fetch(manifestUrl, { cache: "no-store", credentials: "omit" });
+      if (!response.ok) throw new Error(`Manifesto indisponível (${response.status}).`);
+      const manifest = await response.json(); validateManifest(manifest);
+      const [providerIndex, procedures, networks, specialties, sources] = await Promise.all([
+        fetchVerified(manifest.resources.providers, manifestUrl), fetchVerified(manifest.resources.procedures, manifestUrl), fetchVerified(manifest.resources.networks, manifestUrl), fetchVerified(manifest.resources.specialties, manifestUrl), fetchVerified(manifest.resources.sources, manifestUrl)
+      ]);
+      const shards = await Promise.all(providerIndex.data.shards.map((shard) => fetchVerified(shard, providerIndex.url)));
+      state.records = shards.flatMap((item) => item.data.records);
+      if (state.records.length !== providerIndex.data.record_count) throw new Error("A contagem dos prestadores não corresponde ao índice.");
+      state.procedures = procedures.data.records; state.networks = networks.data.records; state.specialties = specialties.data.records; state.sources = sources.data.records;
+      loadUrl(); populateFilters(); updateMetrics(manifest); applyFilters(false);
+    } catch (error) { showError(error instanceof Error ? error.message : "Falha ao carregar a base."); }
   }
-
-  function loadInitialFilters() {
-    const params = new URLSearchParams(window.location.search);
-    state.query = params.get("q") ?? "";
-    state.specialty = params.get("especialidade") ?? "";
-    state.stateCode = params.get("estado") ?? "";
-    state.city = params.get("municipio") ?? "";
-    state.type = params.get("tipo") ?? "";
-    state.source = params.get("fonte") ?? "";
-    state.relationship = params.get("vinculo") ?? "";
-    state.sort = params.get("ordem") ?? "name";
-    elements.query.value = state.query;
-    elements.type.value = ["professional", "facility"].includes(state.type) ? state.type : "";
-    elements.sort.value = ["name", "specialty", "location"].includes(state.sort) ? state.sort : "name";
-  }
-
+  function addOptions(select, values) { for (const item of values) { const option = create("option", "", typeof item === "string" ? item : item.label); option.value = typeof item === "string" ? item : item.value; select.append(option); } }
   function populateFilters() {
-    const specialties = uniqueSorted(state.records.flatMap((record) => record.specialties.map((item) => item.name)));
-    const states = uniqueSorted(state.records.flatMap((record) => record.service_locations.map((location) => location.address.state)));
-    const sources = state.catalog.sources.map((source) => ({ value: source.id, label: source.name }));
-    const relationships = uniqueSorted(state.records.flatMap((record) => record.network_links.map((link) => link.access_mode)));
-
-    appendOptions(elements.specialty, specialties);
-    appendOptions(elements.state, states);
-    appendOptions(elements.source, sources);
-    appendOptions(elements.relationship, relationships);
-
-    if (specialties.includes(state.specialty)) elements.specialty.value = state.specialty;
-    else state.specialty = "";
-    if (states.includes(state.stateCode)) elements.state.value = state.stateCode;
-    else state.stateCode = "";
-    updateCityOptions(state.stateCode, state.city);
-    if (sources.some((source) => source.value === state.source)) elements.source.value = state.source;
-    else state.source = "";
-    if (relationships.includes(state.relationship)) elements.relationship.value = state.relationship;
-    else state.relationship = "";
-
-    const common = ["Cardiologia", "Clínica médica", "Ginecologia", "Ortopedia", "Pediatria"]
-      .filter((item) => specialties.includes(item));
-    elements.quickSearch.replaceChildren(...common.map((specialty) => {
-      const button = create("button", "chip", specialty);
-      button.type = "button";
-      button.dataset.specialty = specialty;
-      button.setAttribute("aria-pressed", String(state.specialty === specialty));
-      return button;
-    }));
+    addOptions(el.specialty, state.specialties.map((item) => ({ value: item.specialty_id, label: item.name })));
+    addOptions(el.state, unique(state.records.flatMap((record) => record.service_locations.map((loc) => loc.address.state))));
+    addOptions(el.network, state.networks.map((item) => ({ value: item.network_id, label: item.name })));
+    addOptions(el.relationship, [{ value: "direct_agreement", label: "Credenciamento direto" }, { value: "indirect_agreement", label: "Rede conveniada / intercâmbio" }]);
+    addOptions(el.prefix, state.networks.filter((item) => item.card_prefix).map((item) => ({ value: item.card_prefix, label: `${item.card_prefix} — ${item.name}` })));
+    const procedures = state.procedures.slice(0, 1500).map((item) => { const option = document.createElement("option"); option.value = `${item.code} — ${item.name}`; return option; });
+    const specialties = state.specialties.map((item) => { const option = document.createElement("option"); option.value = item.name; return option; });
+    el.suggestions.replaceChildren(...procedures, ...specialties); restoreSelectValues(); updateCities(el.state.value, new URLSearchParams(location.search).get("municipio") || "");
+    const common = ["cardiologia", "clinica-medica", "ginecologia-e-obstetricia", "ortopedia-e-traumatologia", "pediatria"];
+    el.quick.replaceChildren(...common.map((id) => { const item = specialtyById(id); if (!item) return null; const button = create("button", "chip", item.name); button.type = "button"; button.dataset.specialty = id; return button; }).filter(Boolean));
   }
-
-  function appendOptions(select, values) {
-    for (const item of values) {
-      const option = create("option", "", typeof item === "string" ? item : item.label);
-      option.value = typeof item === "string" ? item : item.value;
-      select.append(option);
-    }
+  function loadUrl() {
+    const params = new URLSearchParams(location.search); el.query.value = params.get("q") || ""; el.specialty.dataset.initial = params.get("especialidade") || ""; el.state.dataset.initial = params.get("estado") || ""; el.type.value = params.get("tipo") || ""; el.network.dataset.initial = params.get("rede") || ""; el.relationship.dataset.initial = params.get("vinculo") || ""; el.modality.value = params.get("modalidade") || ""; el.prefix.dataset.initial = params.get("prefixo") || ""; el.sort.value = params.get("ordem") || "name";
   }
-
-  function updateCityOptions(stateCode, selectedCity = "") {
-    const firstOption = create("option", "", "Todos os municípios");
-    firstOption.value = "";
-    elements.city.replaceChildren(firstOption);
-    const cities = uniqueSorted(state.records.flatMap((record) =>
-      record.service_locations
-        .filter((location) => !stateCode || location.address.state === stateCode)
-        .map((location) => location.address.city)
-    ));
-    appendOptions(elements.city, cities);
-    if (cities.includes(selectedCity)) elements.city.value = selectedCity;
-    else state.city = "";
+  function restoreSelectValues() { for (const select of [el.specialty, el.state, el.network, el.relationship, el.prefix]) if ([...select.options].some((option) => option.value === select.dataset.initial)) select.value = select.dataset.initial; }
+  function updateCities(stateCode, selected = "") { const first = create("option", "", "Todos os municípios"); first.value = ""; el.city.replaceChildren(first); const cities = unique(state.records.flatMap((record) => record.service_locations.filter((loc) => !stateCode || loc.address.state === stateCode).map((loc) => loc.address.city))); addOptions(el.city, cities); if (cities.includes(selected)) el.city.value = selected; }
+  function updateMetrics(manifest) {
+    const professionals = state.records.filter((item) => item.type === "professional").length; const states = unique(state.records.flatMap((item) => item.service_locations.map((loc) => loc.address.state)));
+    el.total.textContent = state.records.length.toLocaleString("pt-BR"); el.professionals.textContent = professionals.toLocaleString("pt-BR"); el.facilities.textContent = (state.records.length - professionals).toLocaleString("pt-BR"); el.states.textContent = states.length.toLocaleString("pt-BR"); el.sourceCount.textContent = state.sources.length.toLocaleString("pt-BR"); el.status.textContent = `${state.records.length.toLocaleString("pt-BR")} prestadores • ${state.networks.length} redes`;
+    const age = (Date.now() - new Date(manifest.generated_at).getTime()) / 86400000; el.updated.textContent = `Atualizada em ${formatDate(manifest.generated_at)}${age > config.staleAfterDays ? " • atualização atrasada" : " • fonte atualizada"}`;
   }
-
-  function sourceName(sourceId) {
-    return state.catalog?.sources.find((source) => source.id === sourceId)?.name ?? "Fonte não identificada";
+  function findProcedures(query) {
+    const cleaned = normalize(query).replace(/^tuss\s*/, ""); if (cleaned.length < 3) return [];
+    const exactCode = cleaned.match(/^\d{8,10}/)?.[0]; const term = cleaned.replace(/^\d+\s*[-—]?\s*/, "");
+    return state.procedures.filter((item) => item.code === exactCode || (term.length >= 3 && normalize(item.name).includes(term))).sort((a, b) => Number(b.code === exactCode) - Number(a.code === exactCode)).slice(0, 25);
   }
-
-  function sourceDetails(sourceId) {
-    return state.catalog?.sources.find((source) => source.id === sourceId) ?? null;
-  }
-
-  function updateMetrics() {
-    const professionals = state.records.filter((record) => record.type === "professional").length;
-    const states = uniqueSorted(state.records.flatMap((record) => record.service_locations.map((location) => location.address.state)));
-    elements.totalRecords.textContent = state.records.length.toLocaleString("pt-BR");
-    elements.totalProfessionals.textContent = professionals.toLocaleString("pt-BR");
-    elements.totalFacilities.textContent = (state.records.length - professionals).toLocaleString("pt-BR");
-    elements.totalStates.textContent = states.length.toLocaleString("pt-BR");
-    elements.totalSources.textContent = state.catalog.sources.length.toLocaleString("pt-BR");
-  }
-
-  function updateDataStatus(manifest) {
-    const sourceLabel = manifest.source_count === 1 ? "fonte" : "fontes";
-    elements.dataStatus.textContent = `${manifest.record_count.toLocaleString("pt-BR")} registros • ${manifest.source_count} ${sourceLabel}`;
-    elements.updatedStatus.textContent = `Atualizada em ${formatDate(manifest.generated_at)}`;
-    const ageInDays = (Date.now() - new Date(manifest.generated_at).getTime()) / 86_400_000;
-    if (ageInDays > config.staleAfterDays) elements.updatedStatus.textContent += " • revisão recomendada";
-  }
-
-  function recordSearchText(record) {
-    return normalize([
-      record.display_name,
-      record.professional_registry?.council,
-      record.professional_registry?.number,
-      sourceName(record.source_id),
-      ...record.specialties.map((item) => item.name),
-      ...record.network_links.flatMap((link) => [link.relationship_label, link.access_mode, link.coverage_scope]),
-      ...record.service_locations.flatMap((location) => [
-        location.facility_name, location.address.street, location.address.district,
-        location.address.city, location.address.state
-      ])
-    ].join(" "));
-  }
-
+  function recordText(record) { return normalize([record.display_name, record.professional_registry?.council, record.professional_registry?.number, ...record.specialties.map((item) => item.name), ...record.service_locations.flatMap((loc) => [loc.facility_name, loc.address.street, loc.address.district, loc.address.city, loc.address.state]), ...record.network_links.flatMap((link) => [networkById(link.network_id)?.name, link.relationship])].join(" ")); }
   function applyFilters(resetPage = true) {
-    state.query = elements.query.value.trim();
-    state.specialty = elements.specialty.value;
-    state.stateCode = elements.state.value;
-    state.city = elements.city.value;
-    state.type = elements.type.value;
-    state.source = elements.source.value;
-    state.relationship = elements.relationship.value;
-    state.sort = elements.sort.value;
-    if (resetPage) state.page = 1;
-
-    const query = normalize(state.query);
-    state.filtered = state.records.filter((record) => {
-      const locations = record.service_locations;
-      return (
-        (!query || recordSearchText(record).includes(query)) &&
-        (!state.specialty || record.specialties.some((item) => item.name === state.specialty)) &&
-        (!state.stateCode || locations.some((location) => location.address.state === state.stateCode)) &&
-        (!state.city || locations.some((location) => location.address.city === state.city)) &&
-        (!state.type || record.type === state.type) &&
-        (!state.source || record.source_id === state.source) &&
-        (!state.relationship || record.network_links.some((link) => link.access_mode === state.relationship))
-      );
-    });
-    state.filtered.sort(compareRecords);
-    updateUrl();
-    updateQuickSearchState();
-    renderResults();
+    if (resetPage) state.page = 1; const query = el.query.value.trim(); state.procedureMatches = findProcedures(query);
+    const procedureSpecialties = new Set(state.procedureMatches.flatMap((item) => item.related_specialty_ids));
+    const procedureMode = state.procedureMatches.length > 0 && (/\d{8}/.test(query) || !state.records.some((record) => recordText(record).includes(normalize(query))));
+    const selectedNetwork = el.prefix.value ? state.networks.find((item) => item.card_prefix === el.prefix.value)?.network_id : el.network.value;
+    state.filtered = state.records.filter((record) => { const locations = record.service_locations; const directMatch = !query || recordText(record).includes(normalize(query)); const procedureMatch = procedureMode && record.specialty_ids.some((id) => procedureSpecialties.has(id)); return (directMatch || procedureMatch) && (!el.specialty.value || record.specialty_ids.includes(el.specialty.value)) && (!el.state.value || locations.some((loc) => loc.address.state === el.state.value)) && (!el.city.value || locations.some((loc) => loc.address.city === el.city.value)) && (!el.type.value || record.type === el.type.value) && (!selectedNetwork || record.network_links.some((link) => link.network_id === selectedNetwork)) && (!el.relationship.value || record.network_links.some((link) => link.relationship === el.relationship.value)) && (!el.modality.value || locations.some((loc) => loc.modality === el.modality.value)); });
+    state.filtered.sort(compareRecords); updateUrl(); renderProcedureContext(procedureMode); renderResults();
   }
-
-  function compareRecords(a, b) {
-    const value = (record) => state.sort === "specialty"
-      ? record.specialties[0]?.name
-      : state.sort === "location"
-        ? `${record.service_locations[0]?.address.state} ${record.service_locations[0]?.address.city}`
-        : record.display_name;
-    return String(value(a) ?? "").localeCompare(String(value(b) ?? ""), "pt-BR");
+  function compareRecords(a, b) { const value = (record) => el.sort.value === "specialty" ? record.specialties[0]?.name : el.sort.value === "location" ? `${record.service_locations[0]?.address.state || ""} ${record.service_locations[0]?.address.city || ""}` : record.display_name; return String(value(a) || "").localeCompare(String(value(b) || ""), "pt-BR"); }
+  function renderProcedureContext(active) {
+    if (!active || !state.procedureMatches.length) { el.procedureContext.hidden = true; el.procedureContext.replaceChildren(); return; }
+    const primary = state.procedureMatches[0]; const title = create("strong", "", "Prestadores de especialidades relacionadas ao procedimento"); const description = create("p", "", `${primary.code} — ${primary.name}`); const specialties = create("p", "", primary.related_specialty_ids.length ? `Especialidades relacionadas: ${primary.related_specialty_ids.map((id) => specialtyById(id)?.name || id).join(", ")}.` : "Não há associação oficial suficiente para indicar especialidades."); const note = create("small", "", "A relação não confirma execução, cobertura, autorização ou disponibilidade. Confirme com o prestador e o Plan-Assiste."); el.procedureContext.replaceChildren(title, description, specialties, note); el.procedureContext.hidden = false;
   }
-
-  function updateUrl() {
-    const params = new URLSearchParams();
-    if (state.query) params.set("q", state.query);
-    if (state.specialty) params.set("especialidade", state.specialty);
-    if (state.stateCode) params.set("estado", state.stateCode);
-    if (state.city) params.set("municipio", state.city);
-    if (state.type) params.set("tipo", state.type);
-    if (state.source) params.set("fonte", state.source);
-    if (state.relationship) params.set("vinculo", state.relationship);
-    if (state.sort !== "name") params.set("ordem", state.sort);
-    window.history.replaceState(null, "", params.toString() ? `?${params}` : window.location.pathname);
-  }
-
-  function updateQuickSearchState() {
-    elements.quickSearch.querySelectorAll("button").forEach((button) => {
-      button.setAttribute("aria-pressed", String(button.dataset.specialty === state.specialty));
-    });
-  }
-
+  function updateUrl() { const params = new URLSearchParams(); const fields = [["q",el.query.value],["especialidade",el.specialty.value],["estado",el.state.value],["municipio",el.city.value],["tipo",el.type.value],["rede",el.network.value],["vinculo",el.relationship.value],["modalidade",el.modality.value],["prefixo",el.prefix.value],["ordem",el.sort.value === "name" ? "" : el.sort.value]]; for (const [key, value] of fields) if (value) params.set(key, value); history.replaceState(null, "", params.size ? `?${params}` : location.pathname); }
   function renderResults() {
-    const pageCount = Math.max(1, Math.ceil(state.filtered.length / config.recordsPerPage));
-    state.page = Math.min(state.page, pageCount);
-    const start = (state.page - 1) * config.recordsPerPage;
-    const pageRecords = state.filtered.slice(start, start + config.recordsPerPage);
-    elements.list.replaceChildren(...pageRecords.map(createProviderCard));
-    elements.list.setAttribute("aria-busy", "false");
-    elements.empty.hidden = state.filtered.length !== 0;
-    elements.list.hidden = state.filtered.length === 0;
-    elements.pagination.hidden = state.filtered.length === 0;
-    const plural = state.filtered.length === 1 ? "registro encontrado" : "registros encontrados";
-    elements.resultSummary.textContent = `${state.filtered.length.toLocaleString("pt-BR")} ${plural} na base nacional demonstrativa.`;
-    renderPagination(pageCount);
-  }
-
-  function initials(name) {
-    return name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase();
-  }
-
-  function createProviderCard(record) {
-    const article = create("article", "provider-card");
-    const main = create("div", "provider-card__main");
-    const identity = create("div", "provider-identity");
-    const avatar = create("div", "provider-avatar", initials(record.display_name));
-    avatar.setAttribute("aria-hidden", "true");
-    const identityText = create("div");
-    identityText.append(
-      create("span", "provider-type", record.type === "professional" ? "Profissional" : "Estabelecimento"),
-      create("h3", "", record.display_name)
-    );
-    const registry = registryText(record);
-    if (registry) identityText.append(create("p", "registry", registry));
-    identity.append(avatar, identityText);
-
-    const localities = uniqueSorted(record.service_locations.map((location) => `${location.address.city}/${location.address.state}`));
-    const meta = create("div", "provider-meta");
-    meta.append(
-      createMetaBlock("Especialidade", record.specialties.map((item) => item.name).join(" • ")),
-      createMetaBlock("Localidade", localities.join(" • "))
-    );
-
-    const primaryLink = record.network_links[0];
-    const action = create("div", "provider-card__action");
-    action.append(
-      create("span", "network-status", sourceName(record.source_id)),
-      create("span", "access-status", primaryLink.relationship_label)
-    );
-    const detailsButton = create("button", "details-button", "Ver detalhes");
-    detailsButton.type = "button";
-    detailsButton.dataset.recordId = record.public_id;
-    detailsButton.setAttribute("aria-label", `Ver detalhes de ${record.display_name}`);
-    action.append(detailsButton);
-
-    const footer = create("div", "provider-card__footer");
-    const primaryLocation = record.service_locations[0];
-    footer.append(
-      labeledIcon("M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11Zm0-8.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z", formatAddress(primaryLocation.address)),
-      labeledIcon("M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Zm0-14v4m0 4h.01", "Confirme elegibilidade e disponibilidade")
-    );
-    main.append(identity, meta, action);
-    article.append(main, footer);
-    return article;
-  }
-
-  function registryText(record) {
-    const registry = record.professional_registry;
-    return registry ? `${registry.council}-${registry.state} ${registry.number}` : "";
-  }
-
-  function createMetaBlock(label, value) {
-    const block = create("div", "meta-block");
-    block.append(create("span", "", label), create("p", "", value || "Não informado"));
-    return block;
-  }
-
-  function labeledIcon(path, label) {
-    const wrapper = create("span");
-    wrapper.append(icon(path), document.createTextNode(label));
-    return wrapper;
-  }
-
-  function formatAddress(address) {
-    return [address.street, address.district, address.city, address.state].filter(Boolean).join(" • ");
-  }
-
-  function renderPagination(pageCount) {
-    elements.pagination.replaceChildren();
-    if (pageCount <= 1) return;
-    const addButton = (label, page, disabled = false, current = false) => {
-      const button = create("button", "page-button", label);
-      button.type = "button";
-      button.dataset.page = String(page);
-      button.disabled = disabled;
-      if (current) button.setAttribute("aria-current", "page");
-      elements.pagination.append(button);
-    };
-    addButton("Anterior", state.page - 1, state.page === 1);
-    const pages = uniqueSorted([1, state.page - 2, state.page - 1, state.page, state.page + 1, state.page + 2, pageCount]
-      .filter((page) => page >= 1 && page <= pageCount).map(String)).map(Number).sort((a, b) => a - b);
-    let previous = 0;
-    for (const page of pages) {
-      if (page - previous > 1) elements.pagination.append(create("span", "pagination__ellipsis", "…"));
-      addButton(String(page), page, false, page === state.page);
-      previous = page;
+    const pages = Math.max(1, Math.ceil(state.filtered.length / config.recordsPerPage)); state.page = Math.min(state.page, pages); const start = (state.page - 1) * config.recordsPerPage;
+    el.list.replaceChildren(...state.filtered.slice(start, start + config.recordsPerPage).map(providerCard)); el.list.hidden = !state.filtered.length; el.empty.hidden = Boolean(state.filtered.length); el.pagination.hidden = !state.filtered.length;
+    el.summary.textContent = `${state.filtered.length.toLocaleString("pt-BR")} ${state.filtered.length === 1 ? "resultado" : "resultados"} na base publicada.`;
+    if (!state.filtered.length) {
+      const networkId = el.prefix.value ? state.networks.find((item) => item.card_prefix === el.prefix.value)?.network_id : el.network.value;
+      const network = networkById(networkId);
+      if (network?.guide_url) {
+        const icon = create("div", "empty-state__icon", "↗"), title = create("h3", "", `${network.name}: consulta no guia oficial`), message = create("p", "", "Esta rede está vinculada ao Plan-Assiste, mas sua lista completa não está incorporada ao catálogo. Use o canal oficial para consultar prestadores."), link = create("a", "secondary-button", "Consultar guia oficial");
+        link.href = network.guide_url; link.target = "_blank"; link.rel = "noopener noreferrer"; el.empty.replaceChildren(icon, title, message, link);
+      } else {
+        const icon = create("div", "empty-state__icon", "⌕"), title = create("h3", "", "Nenhum resultado encontrado"), message = create("p", "", "Revise os termos ou remova algum filtro para ampliar a consulta."), button = create("button", "secondary-button", "Mostrar todos");
+        button.type = "button"; button.addEventListener("click", clearFilters); el.empty.replaceChildren(icon, title, message, button);
+      }
     }
-    addButton("Próxima", state.page + 1, state.page === pageCount);
+    renderPagination(pages); el.list.setAttribute("aria-busy", "false");
   }
-
-  function showDetails(recordId) {
-    const record = state.records.find((item) => item.public_id === recordId);
-    if (!record) return;
-    elements.modalType.textContent = record.type === "professional" ? "Profissional" : "Estabelecimento";
-    elements.modalTitle.textContent = record.display_name;
-    elements.modalContent.replaceChildren();
-
-    const overview = create("section", "details-section");
-    overview.append(create("h3", "", "Informações do prestador"));
-    const registry = registryText(record);
-    if (registry) overview.append(create("p", "", registry));
-    overview.append(create("p", "", `Especialidades: ${record.specialties.map((item) => item.name).join(" • ")}`));
-    elements.modalContent.append(overview);
-
-    const network = create("section", "details-section");
-    network.append(create("h3", "", "Origem e forma de acesso"));
-    for (const link of record.network_links) {
-      const source = sourceDetails(link.source_id);
-      network.append(
-        create("p", "", `Origem: ${sourceName(link.source_id)}`),
-        create("p", "", `Vínculo: ${link.relationship_label} • ${link.access_mode}`),
-        create("p", "", `Abrangência: ${link.coverage_scope === "national" ? "Nacional" : "Regional"}`),
-        create("p", "", `Situação da fonte: ${source?.status === "synthetic-demo" ? "demonstração com dados sintéticos" : "fonte autorizada"}`)
-      );
-    }
-    network.append(create("p", "", `Informação atualizada em ${formatDate(record.source_updated_at)}.`));
-    elements.modalContent.append(network);
-
-    const locations = create("section", "details-section");
-    locations.append(create("h3", "", record.service_locations.length === 1 ? "Local de atendimento" : "Locais de atendimento"));
-    for (const location of record.service_locations) {
-      const card = create("div", "location-card");
-      card.append(
-        create("strong", "", location.facility_name || record.display_name),
-        create("p", "", formatAddress(location.address)),
-        create("p", "", location.phones.length ? location.phones.join(" • ") : "Telefone não informado")
-      );
-      locations.append(card);
-    }
-    elements.modalContent.append(locations);
-
-    const notice = create("section", "details-section");
-    notice.append(
-      create("h3", "", "Confirmação necessária"),
-      create("p", "", record.network_links[0].availability_notice),
-      create("p", "", "Registro inteiramente sintético. Esta demonstração não representa a rede oficial nem garantia de cobertura.")
-    );
-    elements.modalContent.append(notice);
-    modalTrigger = document.activeElement;
-    document.body.classList.add("modal-open");
-    elements.modal.showModal();
-    elements.closeModal.focus();
+  function providerCard(record) {
+    const article = create("article", "provider-card"), main = create("div", "provider-card__main"), identity = create("div", "provider-identity"); const avatar = create("div", "provider-avatar", record.display_name.split(/\s+/).slice(0,2).map((part) => part[0]).join("").toUpperCase()); avatar.setAttribute("aria-hidden", "true"); const identityText = create("div"); identityText.append(create("span", "provider-type", record.type === "professional" ? "Profissional" : "Estabelecimento"), create("h3", "", record.display_name)); const registry = record.professional_registry; if (registry) identityText.append(create("p", "registry", [registry.council, registry.number, registry.state].filter(Boolean).join(" "))); identity.append(avatar, identityText);
+    const meta = create("div", "provider-meta"), specialty = create("div", "meta-block"), local = create("div", "meta-block"); specialty.append(create("span", "", "Especialidade"), create("strong", "", record.specialties.map((item) => item.name).join(" • ") || "Não informada")); local.append(create("span", "", "Localidade"), create("strong", "", unique(record.service_locations.map((loc) => [loc.address.city, loc.address.state].filter(Boolean).join("/"))).join(" • ") || "Atendimento remoto")); meta.append(specialty, local); main.append(identity, meta);
+    const action = create("div", "provider-card__action"), network = networkById(record.network_links[0]?.network_id); action.append(create("span", "network-status", network?.name || "Rede informada"), create("span", "access-status", record.service_locations.some((loc) => loc.modality === "remote") ? "Atendimento remoto" : "Atendimento presencial")); const button = create("button", "details-button", "Ver detalhes"); button.type = "button"; button.dataset.recordId = record.public_id; action.append(button); article.append(main, action); return article;
   }
-
-  function clearFilters() {
-    elements.form.reset();
-    elements.sort.value = "name";
-    state.page = 1;
-    updateCityOptions("");
-    applyFilters();
+  function renderPagination(pageCount) { const nodes = [], make = (label, page, disabled=false, current=false) => { const item=create("button","",label); item.type="button"; item.dataset.page=page; item.disabled=disabled; if(current)item.setAttribute("aria-current","page"); return item; }; nodes.push(make("Anterior",state.page-1,state.page===1)); for(let page=Math.max(1,state.page-2);page<=Math.min(pageCount,state.page+2);page++)nodes.push(make(String(page),page,false,page===state.page)); nodes.push(make("Próxima",state.page+1,state.page===pageCount)); el.pagination.replaceChildren(...nodes); }
+  function showDetails(id) {
+    const record = state.records.find((item) => item.public_id === id); if (!record) return; modalTrigger = document.activeElement; el.modalType.textContent = record.type === "professional" ? "Profissional" : "Estabelecimento"; el.modalTitle.textContent = record.display_name; const content = document.createDocumentFragment(); const add = (title,value) => { if(!value)return; const section=create("section","details-section"); section.append(create("h3","",title),create("p","",value)); content.append(section); }; add("Especialidades",record.specialties.map((item)=>`${item.name}${item.rqe?` (RQE ${item.rqe})`:""}`).join(" • ")); const locations=record.service_locations.slice(0,3).map((loc)=>[loc.facility_name,loc.address.street,loc.address.district,loc.address.city,loc.address.state,...loc.phones].filter(Boolean).join(" • ")||"Remoto"); if(record.service_locations.length>3)locations.push(`Mais ${record.service_locations.length-3} local(is) na fonte oficial`); add("Atendimento",locations.join("\n")); const network=networkById(record.network_links[0]?.network_id), source=sourceById(record.source_id); add("Rede e vínculo",`${network?.name||"Rede informada"} • ${record.network_links[0]?.relationship==="direct_agreement"?"Credenciamento direto":"Rede conveniada"}`); add("Fonte",`${source?.name||record.source_id} • verificada em ${formatDate(record.verified_at)}`); const link=record.network_links[0]?.guide_url||network?.guide_url; if(link){const anchor=create("a","official-link","Confirmar no guia oficial ↗");anchor.href=link;anchor.target="_blank";anchor.rel="noopener noreferrer";content.append(anchor);} el.modalContent.replaceChildren(content); document.body.classList.add("modal-open"); el.modal.showModal(); el.closeModal.focus();
   }
-
-  function showError(message) {
-    elements.error.hidden = false;
-    elements.errorMessage.textContent = message;
-    elements.list.setAttribute("aria-busy", "false");
-    elements.list.replaceChildren();
-    elements.resultSummary.textContent = "A base não foi disponibilizada.";
-    elements.dataStatus.textContent = "Falha na verificação";
-    elements.updatedStatus.textContent = "Nenhum dado foi exibido";
-  }
-
-  elements.form.addEventListener("submit", (event) => {
-    event.preventDefault();
-    applyFilters();
-    elements.resultTitle.focus({ preventScroll: true });
-    elements.resultTitle.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
-  elements.state.addEventListener("change", () => updateCityOptions(elements.state.value));
-  elements.sort.addEventListener("change", () => applyFilters(false));
-  elements.clear.addEventListener("click", clearFilters);
-  elements.clearEmpty.addEventListener("click", clearFilters);
-  elements.quickSearch.addEventListener("click", (event) => {
-    const button = event.target.closest("button[data-specialty]");
-    if (!button) return;
-    elements.specialty.value = elements.specialty.value === button.dataset.specialty ? "" : button.dataset.specialty;
-    applyFilters();
-  });
-  elements.list.addEventListener("click", (event) => {
-    const button = event.target.closest("button[data-record-id]");
-    if (button) showDetails(button.dataset.recordId);
-  });
-  elements.pagination.addEventListener("click", (event) => {
-    const button = event.target.closest("button[data-page]");
-    if (!button || button.disabled) return;
-    state.page = Number(button.dataset.page);
-    renderResults();
-    elements.resultTitle.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
-  const closeDetails = () => elements.modal.close();
-  elements.closeModal.addEventListener("click", closeDetails);
-  elements.concludeModal.addEventListener("click", closeDetails);
-  elements.modal.addEventListener("click", (event) => {
-    if (event.target === elements.modal) elements.modal.close();
-  });
-  elements.modal.addEventListener("close", () => {
-    document.body.classList.remove("modal-open");
-    if (modalTrigger instanceof HTMLElement) modalTrigger.focus();
-    modalTrigger = null;
-  });
-
+  function clearFilters(){el.form.reset();el.sort.value="name";updateCities("");applyFilters();}
+  function showError(message){el.error.hidden=false;el.errorMessage.textContent=message;el.list.setAttribute("aria-busy","false");el.summary.textContent="A última versão aprovada não pôde ser carregada.";el.status.textContent="Fonte temporariamente indisponível";el.updated.textContent="Nenhum dado foi exibido";}
+  el.form.addEventListener("submit",(event)=>{event.preventDefault();applyFilters();el.title.focus({preventScroll:true});el.title.scrollIntoView({behavior:"smooth",block:"start"});}); el.state.addEventListener("change",()=>updateCities(el.state.value)); el.prefix.addEventListener("change",()=>{if(el.prefix.value)el.network.value="";}); el.network.addEventListener("change",()=>{if(el.network.value)el.prefix.value="";}); el.sort.addEventListener("change",()=>applyFilters(false)); el.clear.addEventListener("click",clearFilters); el.clearEmpty.addEventListener("click",clearFilters); el.quick.addEventListener("click",(event)=>{const button=event.target.closest("button[data-specialty]");if(!button)return;el.specialty.value=el.specialty.value===button.dataset.specialty?"":button.dataset.specialty;applyFilters();}); el.list.addEventListener("click",(event)=>{const button=event.target.closest("button[data-record-id]");if(button)showDetails(button.dataset.recordId);}); el.pagination.addEventListener("click",(event)=>{const button=event.target.closest("button[data-page]");if(!button||button.disabled)return;state.page=Number(button.dataset.page);renderResults();el.title.scrollIntoView({behavior:"smooth",block:"start"});}); const close=()=>el.modal.close(); el.closeModal.addEventListener("click",close);el.concludeModal.addEventListener("click",close);el.modal.addEventListener("click",(event)=>{if(event.target===el.modal)close();});el.modal.addEventListener("close",()=>{document.body.classList.remove("modal-open");if(modalTrigger instanceof HTMLElement)modalTrigger.focus();modalTrigger=null;});
   loadData();
 })();

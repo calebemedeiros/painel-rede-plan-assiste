@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://planassiste.mpu.mp.br/schemas/manifest-v4.schema.json",
+  "title": "Manifesto do catálogo da rede assistencial",
+  "type": "object",
+  "required": ["schema_version", "environment", "generated_at", "resources", "publication_status"],
+  "properties": {
+    "schema_version": {"const": "4.0.0"},
+    "environment": {"const": "production"},
+    "publication_status": {"enum": ["approved", "quarantined"]},
+    "resources": {"type": "object", "required": ["providers", "procedures", "networks", "specialties", "sources"]}
+  }
+}

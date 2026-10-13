@@ -1,35 +1,19 @@
 # Segurança do painel
 
-## Escopo da fase D3
+O frontend não recebe dados de beneficiários, CPF, carteirinha completa, informação clínica ou credencial. O navegador baixa apenas recursos públicos processados, aprovados e acompanhados de SHA-256.
 
-Este repositório de interface não recebe bases incorporadas. Não envie extrações, credenciais, dados de beneficiários ou informações assistenciais. Fontes públicas e institucionais devem ser normalizadas e publicadas por um processo externo controlado.
+## Controles
 
-## Controles ativos
-
-- política de segurança de conteúdo no HTML;
+- CSP restritiva no documento e recomendação de cabeçalhos no servidor;
 - nenhuma dependência JavaScript em tempo de execução;
-- checksum SHA-256 do catálogo;
-- verificação de ambiente e estado da autorização;
-- catálogo armazenado em repositório separado;
-- lista de campos proibidos e identificação sintética validadas no repositório da API;
-- teste que impede reincorporar a base ao repositório da interface;
-- dados renderizados com `textContent`, sem interpretar HTML da fonte;
-- parâmetros de busca gravados na URL sem executar conteúdo;
-- credenciais e pastas de dados reais ignoradas pelo Git.
+- validação do contrato 4.0.0, ambiente e estado de publicação;
+- verificação de integridade de todos os recursos e fragmentos;
+- chamadas `fetch` sem credenciais;
+- conteúdo externo renderizado por `textContent`;
+- links externos definidos no catálogo validado;
+- separação entre interface e pipeline de dados;
+- nenhuma gravação do histórico de pesquisa.
 
-## Comunicação de problema
+`frame-ancestors 'none'` deve ser enviado como cabeçalho HTTP, pois navegadores ignoram essa diretiva em meta CSP.
 
-Durante a fase acadêmica, registre o problema diretamente com o responsável pelo projeto. Antes de eventual uso institucional, este documento deverá indicar o canal oficial definido pelo Plan-Assiste.
-
-Não inclua dados pessoais, credenciais ou cópias da base em uma issue pública.
-
-## Fontes públicas e produção
-
- A alteração de `applicationMode` para `production` não é suficiente para colocar o projeto em produção. Uma fonte pública deve ter origem, termos, finalidade, campos e atualização verificados. A produção também depende de:
-
-- autorização ou caráter público verificável da fonte;
-- validação do Plan-Assiste;
-- armazenamento externo aprovado;
-- referência documental no manifesto;
-- revisão de CORS e da Política de Segurança de Conteúdo;
-- validação institucional de conteúdo, marca e segurança.
+Não publique vulnerabilidades, bases ou dados pessoais em issues públicas. Encaminhe o relato ao responsável institucional pelo repositório.

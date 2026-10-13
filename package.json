@@ -1,11 +1,13 @@
 {
   "name": "painel-rede-plan-assiste",
-  "version": "0.3.0",
+  "version": "1.0.0-rc.1",
   "private": true,
-  "description": "Painel acadêmico de consulta nacional e multifonte à rede assistencial do Plan-Assiste MPU.",
+  "description": "Painel nacional de consulta à rede assistencial do Plan-Assiste MPU.",
   "type": "module",
   "scripts": {
     "test": "node tests/validate-app.mjs",
+    "build": "node scripts/build.mjs",
+    "package": "python scripts/package_release.py",
     "serve": "npx --yes http-server . -p 4173 -c-1"
   },
   "engines": {
