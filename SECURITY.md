@@ -1,19 +1,15 @@
 # Segurança do painel
 
-O frontend não recebe dados de beneficiários, CPF, carteirinha completa, informação clínica ou credencial. O navegador baixa apenas recursos públicos processados, aprovados e acompanhados de SHA-256.
+O frontend não contém prestadores reais, credenciais, CPF, carteirinha, informações clínicas ou histórico de pesquisa.
 
 ## Controles
 
-- CSP restritiva no documento e recomendação de cabeçalhos no servidor;
-- nenhuma dependência JavaScript em tempo de execução;
-- validação do contrato 4.0.0, ambiente e estado de publicação;
-- verificação de integridade de todos os recursos e fragmentos;
-- chamadas `fetch` sem credenciais;
-- conteúdo externo renderizado por `textContent`;
-- links externos definidos no catálogo validado;
-- separação entre interface e pipeline de dados;
-- nenhuma gravação do histórico de pesquisa.
+- CSP restritiva;
+- contrato `4.1.0` e estado de autorização explícito;
+- checksums SHA-256 dos recursos;
+- `fetch` sem credenciais;
+- renderização com `textContent`;
+- nenhuma gravação em `localStorage` ou IndexedDB;
+- estado seguro de configuração pendente quando nenhuma API foi autorizada.
 
-`frame-ancestors 'none'` deve ser enviado como cabeçalho HTTP, pois navegadores ignoram essa diretiva em meta CSP.
-
-Não publique vulnerabilidades, bases ou dados pessoais em issues públicas. Encaminhe o relato ao responsável institucional pelo repositório.
+As fontes são configuradas e tratadas no repositório do catálogo. O navegador recebe somente o JSON minimizado publicado pelo GitHub Pages.

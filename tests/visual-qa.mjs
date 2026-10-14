@@ -29,26 +29,18 @@ try {
     page.on("pageerror", (error) => errors.push(error.message));
     await page.goto("http://127.0.0.1:4174/painel-rede-plan-assiste/", { waitUntil: "networkidle", timeout: 120000 });
     await page.waitForFunction(() => document.querySelector("#total-registros")?.textContent !== "—", null, { timeout: 120000 });
-    if (name === "desktop") {
-      await page.fill("#consulta", "10101012");
-      await page.click("button[type=submit]");
-      await page.waitForSelector("#contexto-procedimento:not([hidden])");
-    }
-    await page.locator("button[data-record-id]").first().click();
-    const modalFits = await page.evaluate(() => {
-      const modal = document.querySelector("#detalhes-modal");
-      const body = document.querySelector("#detalhes-conteudo");
-      return modal.open && modal.getBoundingClientRect().height <= innerHeight && body.scrollHeight <= body.clientHeight;
-    });
-    if (!modalFits) throw new Error(`${name}: modal exige barra de rolagem`);
-    await page.click("#concluir-modal");
+    await page.waitForSelector("#sem-resultados:not([hidden])");
+    const pending = await page.locator("#sem-resultados").textContent();
+    if (!pending.includes("Aguardando configuração")) throw new Error(`${name}: estado vazio incorreto`);
+    const controlsEnabled = await page.locator("#form-busca input:not([disabled]), #form-busca select:not([disabled]), #form-busca button:not([disabled])").count();
+    if (controlsEnabled) throw new Error(`${name}: controles ativos sem fontes configuradas`);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
     if (overflow) throw new Error(`${name}: rolagem horizontal detectada`);
     await page.screenshot({ path: path.join(root, `qa-${name}.png`), fullPage: true });
     await page.close();
   }
   if (errors.length) throw new Error(`Erros do navegador: ${errors.join(" | ")}`);
-  console.log("QA visual concluído em desktop e celular, sem rolagem horizontal ou erro de console.");
+  console.log("QA visual concluído em desktop e celular para o catálogo vazio.");
 } finally {
   await browser.close();
   await new Promise((resolve) => server.close(resolve));

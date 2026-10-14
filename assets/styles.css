@@ -436,6 +436,19 @@ svg {
   background: var(--brand-800);
 }
 
+.search-form :disabled,
+.text-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.primary-button:disabled,
+.primary-button:disabled:hover {
+  background: #6d8581;
+  box-shadow: none;
+  transform: none;
+}
+
 .primary-button svg {
   width: 18px;
 }

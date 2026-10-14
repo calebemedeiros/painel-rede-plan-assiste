@@ -1,6 +1,6 @@
 {
   "name": "painel-rede-plan-assiste",
-  "version": "1.0.0-rc.1",
+  "version": "1.1.0-rc.1",
   "private": true,
   "description": "Painel nacional de consulta à rede assistencial do Plan-Assiste MPU.",
   "type": "module",

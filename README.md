@@ -1,40 +1,25 @@
 # Painel Nacional da Rede Assistencial do Plan-Assiste
 
-Interface estática para consulta pública de prestadores, estabelecimentos, redes, especialidades e procedimentos relacionados à rede assistencial do Plan-Assiste MPU.
+Interface estática preparada para consumir o catálogo configurável da rede assistencial. A versão `1.1.0-rc.1` é publicada sem prestadores, redes, especialidades ou procedimentos reais.
 
-## Estado da versão
+Enquanto nenhuma API estiver configurada, o painel apresenta um estado institucional de configuração pendente e mantém os controles de consulta desabilitados.
 
-Versão `1.0.0-rc.1`, candidata à produção. O navegador consome somente o catálogo público processado e aprovado. Não consulta as APIs de origem, não usa credenciais e não registra dados de beneficiários.
+## Contrato
 
-## Funcionalidades
-
-- pesquisa sem diferenciação de acentos por prestador, estabelecimento, especialidade, procedimento ou código TUSS;
-- indicação de prestadores de especialidades relacionadas ao procedimento, sem afirmar execução ou cobertura;
-- filtros por UF, município, rede, vínculo, modalidade, tipo e prefixo predefinido de intercâmbio Unimed;
-- filtros persistidos na URL;
-- origem, atualização e link do guia oficial em cada detalhe;
-- verificação SHA-256 do manifesto, recursos e fragmentos de prestadores;
-- navegação por teclado, modal nativo, layout responsivo e CSP restritiva.
+- manifesto `4.1.0`;
+- situação inicial `configuration_required`;
+- verificação SHA-256 de todos os recursos;
+- chamadas sem credenciais;
+- nenhum dado de beneficiário ou histórico de pesquisa;
+- conteúdo externo renderizado com `textContent`.
 
 ## Desenvolvimento
 
-Sirva a pasta `03_Projeto_em_Desenvolvimento` para que o painel e o catálogo irmão fiquem sob a mesma origem:
-
-```powershell
-npx --yes http-server .. -p 4173 -c-1
-```
-
-Validação e build:
+Gere primeiro o catálogo vazio no repositório irmão e depois execute:
 
 ```powershell
 npm test
 npm run build
 ```
 
-O conteúdo de `dist/` pode ser publicado no GitHub Pages ou copiado pela DTI para um subdiretório institucional. Os caminhos de interface são relativos; a URL do manifesto fica isolada em `assets/config.js`.
-
-## Governança
-
-Alterações de código e fontes devem passar por pull request. O catálogo aplica lista positiva de campos, checksums e quarentena. Redes sem API estável continuam representadas por seu guia oficial. A presença no painel não confirma elegibilidade, autorização, cobertura, execução do procedimento ou disponibilidade.
-
-Consulte [documentação de implantação](docs/IMPLANTACAO_DTI.md) e [política de segurança](SECURITY.md).
+No GitHub Pages, o painel consulta o manifesto publicado pelo repositório do catálogo. O frontend não chama diretamente as APIs de origem.

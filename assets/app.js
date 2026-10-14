@@ -29,8 +29,10 @@
     return { data: JSON.parse(payload), url };
   }
   function validateManifest(manifest) {
-    if (manifest?.schema_version !== "4.0.0" || manifest.environment !== "production") throw new Error("Contrato de dados incompatível.");
-    if (manifest.publication_status !== "approved" || manifest.authorization?.status !== "authorized") throw new Error("A versão disponível não está aprovada para publicação.");
+    if (manifest?.schema_version !== "4.1.0" || manifest.environment !== "production") throw new Error("Contrato de dados incompatível.");
+    if (!["approved", "configuration_required"].includes(manifest.publication_status)) throw new Error("Situação de publicação inválida.");
+    if (!["authorized", "configuration_required"].includes(manifest.authorization?.status)) throw new Error("Situação de autorização inválida.");
+    if (manifest.data_policy?.acquisition !== "documented_public_json_only" || manifest.data_policy?.raw_responses_published !== false || manifest.data_policy?.enumeration_allowed !== false) throw new Error("Política de dados incompatível.");
     for (const name of ["providers", "procedures", "networks", "specialties", "sources"]) {
       if (!manifest.resources?.[name]?.url || !/^[a-f0-9]{64}$/.test(manifest.resources[name].checksum_sha256)) throw new Error(`Recurso obrigatório inválido: ${name}.`);
     }
@@ -48,7 +50,8 @@
       state.records = shards.flatMap((item) => item.data.records);
       if (state.records.length !== providerIndex.data.record_count) throw new Error("A contagem dos prestadores não corresponde ao índice.");
       state.procedures = procedures.data.records; state.networks = networks.data.records; state.specialties = specialties.data.records; state.sources = sources.data.records;
-      loadUrl(); populateFilters(); updateMetrics(manifest); applyFilters(false);
+      loadUrl(); populateFilters(); updateMetrics(manifest);
+      if (manifest.publication_status === "configuration_required") renderConfigurationPending(); else applyFilters(false);
     } catch (error) { showError(error instanceof Error ? error.message : "Falha ao carregar a base."); }
   }
   function addOptions(select, values) { for (const item of values) { const option = create("option", "", typeof item === "string" ? item : item.label); option.value = typeof item === "string" ? item : item.value; select.append(option); } }
@@ -72,7 +75,15 @@
   function updateMetrics(manifest) {
     const professionals = state.records.filter((item) => item.type === "professional").length; const states = unique(state.records.flatMap((item) => item.service_locations.map((loc) => loc.address.state)));
     el.total.textContent = state.records.length.toLocaleString("pt-BR"); el.professionals.textContent = professionals.toLocaleString("pt-BR"); el.facilities.textContent = (state.records.length - professionals).toLocaleString("pt-BR"); el.states.textContent = states.length.toLocaleString("pt-BR"); el.sourceCount.textContent = state.sources.length.toLocaleString("pt-BR"); el.status.textContent = `${state.records.length.toLocaleString("pt-BR")} prestadores • ${state.networks.length} redes`;
-    const age = (Date.now() - new Date(manifest.generated_at).getTime()) / 86400000; el.updated.textContent = `Atualizada em ${formatDate(manifest.generated_at)}${age > config.staleAfterDays ? " • atualização atrasada" : " • fonte atualizada"}`;
+    const age = (Date.now() - new Date(manifest.generated_at).getTime()) / 86400000; el.updated.textContent = manifest.publication_status === "configuration_required" ? "Nenhuma API configurada" : `Atualizada em ${formatDate(manifest.generated_at)}${age > config.staleAfterDays ? " • atualização atrasada" : " • fonte atualizada"}`;
+  }
+  function renderConfigurationPending() {
+    for (const control of el.form.elements) control.disabled = true;
+    el.clear.disabled = true; el.list.hidden = true; el.pagination.hidden = true; el.error.hidden = true;
+    el.status.textContent = "Catálogo pronto para configuração";
+    el.summary.textContent = "Nenhum dado real está publicado.";
+    const icon = create("div", "empty-state__icon", "⚙"), title = create("h3", "", "Aguardando configuração das fontes"), message = create("p", "", "A estrutura de consulta está pronta. A equipe do Plan-Assiste deverá cadastrar e autorizar as APIs públicas de credenciados diretos e indiretos.");
+    el.empty.replaceChildren(icon, title, message); el.empty.hidden = false;
   }
   function findProcedures(query) {
     const cleaned = normalize(query).replace(/^tuss\s*/, ""); if (cleaned.length < 3) return [];
